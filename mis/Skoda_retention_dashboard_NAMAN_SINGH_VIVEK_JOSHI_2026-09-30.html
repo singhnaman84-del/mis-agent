@@ -1,0 +1,722 @@
+<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Skoda retention dashboard - NAMAN SINGH / VIVEK JOSHI</title><style>
+:root{--brand:#1F5B3F;--accent:#B08A3C;--ink:#1d2433;--muted:#667085;--line:#e4e7ec;--bg:#fff;--tile:#f6f8fb}
+@media (prefers-color-scheme: dark){:root{--ink:#e7eaf0;--muted:#98a2b3;--line:#2c3444;--bg:#111722;--tile:#18202e}}
+*{box-sizing:border-box}body{font-family:IBM Plex Sans,Segoe UI,Arial,sans-serif;color:var(--ink);background:var(--bg);margin:0;padding:24px 16px;line-height:1.45}
+main{max-width:1100px;margin:auto}h1{color:var(--brand);margin:0 0 4px;font-size:26px}h2{border-bottom:2px solid var(--brand);padding-bottom:4px;margin-top:28px;font-size:19px}
+h3{font-size:15px;margin:18px 0 6px}.sub{color:var(--muted);margin-bottom:18px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin:10px 0}
+.kpi{background:var(--tile);border:1px solid var(--line);border-radius:10px;padding:10px 12px}.kpi .l{font-size:12px;color:var(--muted)}.kpi .v{font-size:22px;font-weight:700}.kpi .n{font-size:12px;color:var(--muted)}
+.tw{overflow-x:auto;margin:8px 0 14px}table{border-collapse:collapse;font-size:12.5px;width:100%}th{background:var(--brand);color:#fff;text-align:left;padding:6px 8px;white-space:nowrap}
+td{padding:5px 8px;border-bottom:1px solid var(--line);white-space:nowrap}tr:nth-child(even) td{background:var(--tile)}
+ul{margin:6px 0 12px}footer{color:var(--muted);font-size:11px;margin-top:30px}
+@media print{body{padding:0}.chart{page-break-inside:avoid}}
+</style><script src='https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js'></script></head><body><main><h1>Skoda retention dashboard - NAMAN SINGH / VIVEK JOSHI</h1><div class='sub'>Private car data as of 2026-09-28</div><div class='kpis'><div class='kpi'><div class='l'>Aug&#x27;26 retention</div><div class='v'>41.3%</div><div class='n'>target 70.0%</div></div><div class='kpi'><div class='l'>First year</div><div class='v'>37.4%</div><div class='n'>73 / 195</div></div><div class='kpi'><div class='l'>Other year</div><div class='v'>49.5%</div><div class='n'>46 / 93</div></div><div class='kpi'><div class='l'>Renewals to target</div><div class='v'>83</div><div class='n'>Aug&#x27;26</div></div><div class='kpi'><div class='l'>Sep&#x27;26 MTD</div><div class='v'>49.3%</div><div class='n'>188 / 381 due so far</div></div><div class='kpi'><div class='l'>YTD (closed months)</div><div class='v'>46.4%</div><div class='n'>2,407 policies</div></div></div><h2>Insights</h2><ul><li><b>Aug&#x27;26 (last closed month)</b>: retention 41.3% on 288 policies (37.4% first-year, 49.5% other-year) vs a 70.0% target.</li><li>Closing Aug&#x27;26 at target needed <b>83 more renewals</b>.</li><li>Month on month: -4.3 pts vs Jul&#x27;26 (45.6%).</li><li>Trend since Jan&#x27;26: slipping (first 3 months 47.8%, last 3 months 44.2%).</li><li>Sep&#x27;26 month-to-date: 49.3% on 381 policies due so far (running month - not comparable with closed months).</li><li>5 of 6 dealers (base &gt;= 10) are Red. The 5 largest gaps hold 100% of the renewals needed - Jai Auto Vehicles Pvt Ltd [SK10277] (47), ZEDEX SKODA [SK10352] (13), Excel Cars Pvt. Ltd. [SK10361] (10), Ring Road Motocorp Pvt. Ltd [SK10363] (8), Malwa Motor Sales Pvt Ltd [SK93810395] (6).</li></ul><h2>Monthly trend</h2><div class='chart'><div style="height:340px; width:100%;">                            <div id="99fcb273-a39b-45b3-8f45-d98c2ccee980" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("99fcb273-a39b-45b3-8f45-d98c2ccee980")) {                    Plotly.newPlot(                        "99fcb273-a39b-45b3-8f45-d98c2ccee980",                        [{"hovertemplate":"First year: %{y:.1%}\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#1F5B3F","width":2},"marker":{"line":{"color":"#FFFFFF","width":2},"size":8},"mode":"lines+markers","name":"First year","x":["Jan'26","Feb'26","Mar'26","Apr'26","May'26","Jun'26","Jul'26","Aug'26","Sep'26 (MTD)"],"y":[0.34579439252336447,0.46113989637305697,0.4744525547445255,0.47368421052631576,0.44976076555023925,0.4567307692307692,0.4068627450980392,0.37435897435897436,0.44481605351170567],"type":"scatter"},{"hovertemplate":"Other year: %{y:.1%}\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#B08A3C","width":2},"marker":{"line":{"color":"#FFFFFF","width":2},"size":8},"mode":"lines+markers","name":"Other year","x":["Jan'26","Feb'26","Mar'26","Apr'26","May'26","Jun'26","Jul'26","Aug'26","Sep'26 (MTD)"],"y":[0.53,0.5769230769230769,0.5803571428571429,0.5145631067961165,0.42857142857142855,0.45918367346938777,0.5802469135802469,0.4946236559139785,0.6707317073170732],"type":"scatter"},{"hovertemplate":"Total: %{y:.1%}\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#2a78d6","width":2},"marker":{"line":{"color":"#FFFFFF","width":2},"size":8},"mode":"lines+markers","name":"Total","x":["Jan'26","Feb'26","Mar'26","Apr'26","May'26","Jun'26","Jul'26","Aug'26","Sep'26 (MTD)"],"y":[0.43478260869565216,0.4944649446494465,0.5051813471502591,0.4857142857142857,0.4426751592356688,0.45751633986928103,0.45614035087719296,0.4131944444444444,0.49343832020997375],"type":"scatter"}],                        {"template":{"data":{"candlestick":[{"decreasing":{"line":{"color":"#000033"}},"increasing":{"line":{"color":"#000032"}},"type":"candlestick"}],"contourcarpet":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"contourcarpet"}],"contour":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"contour"}],"heatmap":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"heatmap"}],"histogram2d":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"histogram2d"}],"icicle":[{"textfont":{"color":"white"},"type":"icicle"}],"sankey":[{"textfont":{"color":"#000036"},"type":"sankey"}],"scatter":[{"marker":{"line":{"width":0}},"type":"scatter"}],"table":[{"cells":{"fill":{"color":"#000038"},"font":{"color":"#000037"},"line":{"color":"#000039"}},"header":{"fill":{"color":"#000040"},"font":{"color":"#000036"},"line":{"color":"#000039"}},"type":"table"}],"waterfall":[{"connector":{"line":{"color":"#000036","width":2}},"decreasing":{"marker":{"color":"#000033"}},"increasing":{"marker":{"color":"#000032"}},"totals":{"marker":{"color":"#000034"}},"type":"waterfall"}]},"layout":{"coloraxis":{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]]},"colorscale":{"diverging":[[0.0,"#000021"],[0.1111111111111111,"#000022"],[0.2222222222222222,"#000023"],[0.3333333333333333,"#000024"],[0.4444444444444444,"#000025"],[0.5555555555555556,"#000026"],[0.6666666666666666,"#000027"],[0.7777777777777778,"#000028"],[0.8888888888888888,"#000029"],[1.0,"#000030"]],"sequential":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"sequentialminus":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]]},"colorway":["#000001","#000002","#000003","#000004","#000005","#000006","#000007","#000008","#000009","#000010"]}},"shapes":[{"line":{"color":"#B08A3C","dash":"dash","width":2},"type":"line","x0":0,"x1":1,"xref":"x domain","y0":0.7,"y1":0.7,"yref":"y"}],"annotations":[{"font":{"color":"#3E4C59","size":11},"showarrow":false,"text":"Target 70%","x":0,"xanchor":"left","xref":"x domain","y":0.7,"yanchor":"bottom","yref":"y"}],"yaxis":{"tickformat":".0%","tickfont":{"color":"#6B7A88"},"showgrid":true,"gridcolor":"#E6EAEE","linecolor":"#D5DBE0","zeroline":false},"title":{"font":{"size":14,"color":"#14202B","family":"Archivo, IBM Plex Sans, system-ui, -apple-system, Segoe UI, sans-serif"},"text":"\u003cb\u003eSkoda - retention % by month\u003c\u002fb\u003e","x":0,"xanchor":"left"},"margin":{"l":8,"r":28,"t":52,"b":8},"legend":{"font":{"color":"#3E4C59","size":11},"orientation":"h","y":1.0,"x":1,"xanchor":"right","yanchor":"bottom"},"hoverlabel":{"font":{"color":"#14202B"},"bgcolor":"#ffffff","bordercolor":"#E6EAEE"},"font":{"family":"IBM Plex Sans, system-ui, -apple-system, Segoe UI, sans-serif","size":12,"color":"#3E4C59"},"height":340,"bargap":0.3,"bargroupgap":0.08,"barcornerradius":4,"hovermode":"x unified","showlegend":true,"paper_bgcolor":"#FFFFFF","plot_bgcolor":"#FFFFFF","xaxis":{"tickfont":{"color":"#6B7A88"},"showgrid":false,"gridcolor":"#E6EAEE","linecolor":"#D5DBE0","zeroline":false}},                        {"displaylogo": false, "responsive": true}                    )                };            </script>        </div></div><div class='chart'><div style="height:340px; width:100%;">                            <div id="9acec77d-3e53-4d16-803a-7606a6a6147b" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("9acec77d-3e53-4d16-803a-7606a6a6147b")) {                    Plotly.newPlot(                        "9acec77d-3e53-4d16-803a-7606a6a6147b",                        [{"cliponaxis":false,"hovertemplate":"%{x}\u003cbr\u003eRenewed: %{y:,.0f}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#1F5B3F","line":{"width":0}},"name":"Renewed","textfont":{"color":"#3E4C59","size":11},"textposition":"outside","x":["Jan'26","Feb'26","Mar'26","Apr'26","May'26","Jun'26","Jul'26","Aug'26","Sep'26 (MTD)"],"y":[90.0,134.0,195.0,170.0,139.0,140.0,130.0,119.0,188.0],"type":"bar"},{"cliponaxis":false,"hovertemplate":"%{x}\u003cbr\u003eNot renewed: %{y:,.0f}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#B08A3C","line":{"width":0}},"name":"Not renewed","textfont":{"color":"#3E4C59","size":11},"textposition":"outside","x":["Jan'26","Feb'26","Mar'26","Apr'26","May'26","Jun'26","Jul'26","Aug'26","Sep'26 (MTD)"],"y":[117.0,137.0,191.0,180.0,175.0,166.0,155.0,169.0,193.0],"type":"bar"}],                        {"template":{"data":{"candlestick":[{"decreasing":{"line":{"color":"#000033"}},"increasing":{"line":{"color":"#000032"}},"type":"candlestick"}],"contourcarpet":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"contourcarpet"}],"contour":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"contour"}],"heatmap":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"heatmap"}],"histogram2d":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"histogram2d"}],"icicle":[{"textfont":{"color":"white"},"type":"icicle"}],"sankey":[{"textfont":{"color":"#000036"},"type":"sankey"}],"scatter":[{"marker":{"line":{"width":0}},"type":"scatter"}],"table":[{"cells":{"fill":{"color":"#000038"},"font":{"color":"#000037"},"line":{"color":"#000039"}},"header":{"fill":{"color":"#000040"},"font":{"color":"#000036"},"line":{"color":"#000039"}},"type":"table"}],"waterfall":[{"connector":{"line":{"color":"#000036","width":2}},"decreasing":{"marker":{"color":"#000033"}},"increasing":{"marker":{"color":"#000032"}},"totals":{"marker":{"color":"#000034"}},"type":"waterfall"}]},"layout":{"coloraxis":{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]]},"colorscale":{"diverging":[[0.0,"#000021"],[0.1111111111111111,"#000022"],[0.2222222222222222,"#000023"],[0.3333333333333333,"#000024"],[0.4444444444444444,"#000025"],[0.5555555555555556,"#000026"],[0.6666666666666666,"#000027"],[0.7777777777777778,"#000028"],[0.8888888888888888,"#000029"],[1.0,"#000030"]],"sequential":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"sequentialminus":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]]},"colorway":["#000001","#000002","#000003","#000004","#000005","#000006","#000007","#000008","#000009","#000010"]}},"barmode":"stack","yaxis":{"tickformat":",.0f","tickfont":{"color":"#6B7A88"},"showgrid":true,"gridcolor":"#E6EAEE","linecolor":"#D5DBE0","zeroline":false},"title":{"font":{"size":14,"color":"#14202B","family":"Archivo, IBM Plex Sans, system-ui, -apple-system, Segoe UI, sans-serif"},"text":"\u003cb\u003eSkoda - policies due vs renewed\u003c\u002fb\u003e","x":0,"xanchor":"left"},"margin":{"l":8,"r":28,"t":52,"b":8},"legend":{"font":{"color":"#3E4C59","size":11},"orientation":"h","y":1.0,"x":1,"xanchor":"right","yanchor":"bottom"},"hoverlabel":{"font":{"color":"#14202B"},"bgcolor":"#ffffff","bordercolor":"#E6EAEE"},"font":{"family":"IBM Plex Sans, system-ui, -apple-system, Segoe UI, sans-serif","size":12,"color":"#3E4C59"},"height":340,"bargap":0.3,"bargroupgap":0.08,"barcornerradius":4,"hovermode":"closest","showlegend":true,"paper_bgcolor":"#FFFFFF","plot_bgcolor":"#FFFFFF","xaxis":{"tickfont":{"color":"#6B7A88"},"showgrid":false,"gridcolor":"#E6EAEE","linecolor":"#D5DBE0","zeroline":false}},                        {"displaylogo": false, "responsive": true}                    )                };            </script>        </div></div><h3>Month-wise</h3><div class='tw'><table class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Month</th>
+      <th>FY base</th>
+      <th>FY ach</th>
+      <th>FY %</th>
+      <th>OY base</th>
+      <th>OY ach</th>
+      <th>OY %</th>
+      <th>Base</th>
+      <th>Renewed</th>
+      <th>Ret %</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Jan'26</td>
+      <td>107</td>
+      <td>37</td>
+      <td>34.6%</td>
+      <td>100</td>
+      <td>53</td>
+      <td>53.0%</td>
+      <td>207</td>
+      <td>90</td>
+      <td>43.5%</td>
+    </tr>
+    <tr>
+      <td>Feb'26</td>
+      <td>193</td>
+      <td>89</td>
+      <td>46.1%</td>
+      <td>78</td>
+      <td>45</td>
+      <td>57.7%</td>
+      <td>271</td>
+      <td>134</td>
+      <td>49.4%</td>
+    </tr>
+    <tr>
+      <td>Mar'26</td>
+      <td>274</td>
+      <td>130</td>
+      <td>47.4%</td>
+      <td>112</td>
+      <td>65</td>
+      <td>58.0%</td>
+      <td>386</td>
+      <td>195</td>
+      <td>50.5%</td>
+    </tr>
+    <tr>
+      <td>Apr'26</td>
+      <td>247</td>
+      <td>117</td>
+      <td>47.4%</td>
+      <td>103</td>
+      <td>53</td>
+      <td>51.5%</td>
+      <td>350</td>
+      <td>170</td>
+      <td>48.6%</td>
+    </tr>
+    <tr>
+      <td>May'26</td>
+      <td>209</td>
+      <td>94</td>
+      <td>45.0%</td>
+      <td>105</td>
+      <td>45</td>
+      <td>42.9%</td>
+      <td>314</td>
+      <td>139</td>
+      <td>44.3%</td>
+    </tr>
+    <tr>
+      <td>Jun'26</td>
+      <td>208</td>
+      <td>95</td>
+      <td>45.7%</td>
+      <td>98</td>
+      <td>45</td>
+      <td>45.9%</td>
+      <td>306</td>
+      <td>140</td>
+      <td>45.8%</td>
+    </tr>
+    <tr>
+      <td>Jul'26</td>
+      <td>204</td>
+      <td>83</td>
+      <td>40.7%</td>
+      <td>81</td>
+      <td>47</td>
+      <td>58.0%</td>
+      <td>285</td>
+      <td>130</td>
+      <td>45.6%</td>
+    </tr>
+    <tr>
+      <td>Aug'26</td>
+      <td>195</td>
+      <td>73</td>
+      <td>37.4%</td>
+      <td>93</td>
+      <td>46</td>
+      <td>49.5%</td>
+      <td>288</td>
+      <td>119</td>
+      <td>41.3%</td>
+    </tr>
+    <tr>
+      <td>Sep'26 (MTD)</td>
+      <td>299</td>
+      <td>133</td>
+      <td>44.5%</td>
+      <td>82</td>
+      <td>55</td>
+      <td>67.1%</td>
+      <td>381</td>
+      <td>188</td>
+      <td>49.3%</td>
+    </tr>
+  </tbody>
+</table></div><h2>Dealers - Aug&#x27;26</h2><div class='chart'><div style="height:300px; width:100%;">                            <div id="3bc5c162-9a3b-4bce-955a-f4e68f4ec124" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("3bc5c162-9a3b-4bce-955a-f4e68f4ec124")) {                    Plotly.newPlot(                        "3bc5c162-9a3b-4bce-955a-f4e68f4ec124",                        [{"cliponaxis":false,"hovertemplate":"%{y}\u003cbr\u003eNOP to target: %{x:,.0f}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#1F5B3F","line":{"width":0}},"name":"NOP to target","orientation":"h","text":["47","13","10","8.0","6.0","0.0"],"textfont":{"color":"#3E4C59","size":11},"textposition":"outside","x":[47.0,13.0,10.0,8.0,6.0,0.0],"y":["Jai Auto Vehicles Pvt Ltd","ZEDEX SKODA","Excel Cars Pvt. Ltd.","Ring Road Motocorp Pvt. Ltd","Malwa Motor Sales Pvt Ltd","PAL PRATEEK AUTOMOBILE LLP"],"type":"bar"}],                        {"template":{"data":{"candlestick":[{"decreasing":{"line":{"color":"#000033"}},"increasing":{"line":{"color":"#000032"}},"type":"candlestick"}],"contourcarpet":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"contourcarpet"}],"contour":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"contour"}],"heatmap":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"heatmap"}],"histogram2d":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"histogram2d"}],"icicle":[{"textfont":{"color":"white"},"type":"icicle"}],"sankey":[{"textfont":{"color":"#000036"},"type":"sankey"}],"scatter":[{"marker":{"line":{"width":0}},"type":"scatter"}],"table":[{"cells":{"fill":{"color":"#000038"},"font":{"color":"#000037"},"line":{"color":"#000039"}},"header":{"fill":{"color":"#000040"},"font":{"color":"#000036"},"line":{"color":"#000039"}},"type":"table"}],"waterfall":[{"connector":{"line":{"color":"#000036","width":2}},"decreasing":{"marker":{"color":"#000033"}},"increasing":{"marker":{"color":"#000032"}},"totals":{"marker":{"color":"#000034"}},"type":"waterfall"}]},"layout":{"coloraxis":{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]]},"colorscale":{"diverging":[[0.0,"#000021"],[0.1111111111111111,"#000022"],[0.2222222222222222,"#000023"],[0.3333333333333333,"#000024"],[0.4444444444444444,"#000025"],[0.5555555555555556,"#000026"],[0.6666666666666666,"#000027"],[0.7777777777777778,"#000028"],[0.8888888888888888,"#000029"],[1.0,"#000030"]],"sequential":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"sequentialminus":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]]},"colorway":["#000001","#000002","#000003","#000004","#000005","#000006","#000007","#000008","#000009","#000010"]}},"xaxis":{"tickformat":",.0f","tickfont":{"color":"#6B7A88"},"showgrid":true,"gridcolor":"#E6EAEE","linecolor":"#D5DBE0","zeroline":false},"yaxis":{"autorange":"reversed","tickfont":{"color":"#6B7A88"},"showgrid":false,"gridcolor":"#E6EAEE","linecolor":"#D5DBE0","zeroline":false},"title":{"font":{"size":14,"color":"#14202B","family":"Archivo, IBM Plex Sans, system-ui, -apple-system, Segoe UI, sans-serif"},"text":"\u003cb\u003eLargest gaps to target (renewals needed)\u003c\u002fb\u003e","x":0,"xanchor":"left"},"margin":{"l":8,"r":28,"t":52,"b":8},"legend":{"font":{"color":"#3E4C59","size":11},"orientation":"h","y":1.0,"x":1,"xanchor":"right","yanchor":"bottom"},"hoverlabel":{"font":{"color":"#14202B"},"bgcolor":"#ffffff","bordercolor":"#E6EAEE"},"font":{"family":"IBM Plex Sans, system-ui, -apple-system, Segoe UI, sans-serif","size":12,"color":"#3E4C59"},"height":300,"bargap":0.3,"bargroupgap":0.08,"barcornerradius":4,"hovermode":"closest","showlegend":false,"paper_bgcolor":"#FFFFFF","plot_bgcolor":"#FFFFFF"},                        {"displaylogo": false, "responsive": true}                    )                };            </script>        </div></div><h3>Priority dealers (largest renewal gap)</h3><div class='tw'><table class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Code</th>
+      <th>Dealer</th>
+      <th>RM</th>
+      <th>ZM</th>
+      <th>Base</th>
+      <th>Renewed</th>
+      <th>Ret %</th>
+      <th>FY %</th>
+      <th>OY %</th>
+      <th>NOP to target</th>
+      <th>RAG</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>SK10277</td>
+      <td>Jai Auto Vehicles Pvt Ltd</td>
+      <td>VIVEK JOSHI</td>
+      <td>NAMAN SINGH</td>
+      <td>113</td>
+      <td>33</td>
+      <td>29.2%</td>
+      <td>24.4%</td>
+      <td>41.9%</td>
+      <td>47</td>
+      <td>Red</td>
+    </tr>
+    <tr>
+      <td>SK10352</td>
+      <td>ZEDEX SKODA</td>
+      <td>VIVEK JOSHI</td>
+      <td>NAMAN SINGH</td>
+      <td>41</td>
+      <td>16</td>
+      <td>39.0%</td>
+      <td>42.9%</td>
+      <td>30.8%</td>
+      <td>13</td>
+      <td>Red</td>
+    </tr>
+    <tr>
+      <td>SK10361</td>
+      <td>Excel Cars Pvt. Ltd.</td>
+      <td>VIVEK JOSHI</td>
+      <td>NAMAN SINGH</td>
+      <td>52</td>
+      <td>27</td>
+      <td>51.9%</td>
+      <td>47.5%</td>
+      <td>66.7%</td>
+      <td>10</td>
+      <td>Red</td>
+    </tr>
+    <tr>
+      <td>SK10363</td>
+      <td>Ring Road Motocorp Pvt. Ltd</td>
+      <td>VIVEK JOSHI</td>
+      <td>NAMAN SINGH</td>
+      <td>28</td>
+      <td>12</td>
+      <td>42.9%</td>
+      <td>28.6%</td>
+      <td>47.6%</td>
+      <td>8</td>
+      <td>Red</td>
+    </tr>
+    <tr>
+      <td>SK93810395</td>
+      <td>Malwa Motor Sales Pvt Ltd</td>
+      <td>VIVEK JOSHI</td>
+      <td>NAMAN SINGH</td>
+      <td>10</td>
+      <td>1</td>
+      <td>10.0%</td>
+      <td>10.0%</td>
+      <td></td>
+      <td>6</td>
+      <td>Red</td>
+    </tr>
+    <tr>
+      <td>SK10387</td>
+      <td>PAL PRATEEK AUTOMOBILE LLP</td>
+      <td>VIVEK JOSHI</td>
+      <td>NAMAN SINGH</td>
+      <td>41</td>
+      <td>30</td>
+      <td>73.2%</td>
+      <td>76.0%</td>
+      <td>68.8%</td>
+      <td>0</td>
+      <td>Green</td>
+    </tr>
+  </tbody>
+</table></div><h3>Top performers</h3><div class='tw'><table class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Code</th>
+      <th>Dealer</th>
+      <th>RM</th>
+      <th>ZM</th>
+      <th>Base</th>
+      <th>Renewed</th>
+      <th>Ret %</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>SK10387</td>
+      <td>PAL PRATEEK AUTOMOBILE LLP</td>
+      <td>VIVEK JOSHI</td>
+      <td>NAMAN SINGH</td>
+      <td>41</td>
+      <td>30</td>
+      <td>73.2%</td>
+    </tr>
+    <tr>
+      <td>SK10361</td>
+      <td>Excel Cars Pvt. Ltd.</td>
+      <td>VIVEK JOSHI</td>
+      <td>NAMAN SINGH</td>
+      <td>52</td>
+      <td>27</td>
+      <td>51.9%</td>
+    </tr>
+    <tr>
+      <td>SK10363</td>
+      <td>Ring Road Motocorp Pvt. Ltd</td>
+      <td>VIVEK JOSHI</td>
+      <td>NAMAN SINGH</td>
+      <td>28</td>
+      <td>12</td>
+      <td>42.9%</td>
+    </tr>
+    <tr>
+      <td>SK10352</td>
+      <td>ZEDEX SKODA</td>
+      <td>VIVEK JOSHI</td>
+      <td>NAMAN SINGH</td>
+      <td>41</td>
+      <td>16</td>
+      <td>39.0%</td>
+    </tr>
+    <tr>
+      <td>SK10277</td>
+      <td>Jai Auto Vehicles Pvt Ltd</td>
+      <td>VIVEK JOSHI</td>
+      <td>NAMAN SINGH</td>
+      <td>113</td>
+      <td>33</td>
+      <td>29.2%</td>
+    </tr>
+    <tr>
+      <td>SK93810395</td>
+      <td>Malwa Motor Sales Pvt Ltd</td>
+      <td>VIVEK JOSHI</td>
+      <td>NAMAN SINGH</td>
+      <td>10</td>
+      <td>1</td>
+      <td>10.0%</td>
+    </tr>
+  </tbody>
+</table></div><h3>Biggest decliners Jul&#x27;26 -&gt; Aug&#x27;26</h3><div class='tw'><table class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>dealer_code</th>
+      <th>dealer_name</th>
+      <th>Base Jul'26</th>
+      <th>Ret % Jul'26</th>
+      <th>Base Aug'26</th>
+      <th>Ret % Aug'26</th>
+      <th>Change (pts)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>SK10277</td>
+      <td>Jai Auto Vehicles Pvt Ltd</td>
+      <td>107</td>
+      <td>41.1%</td>
+      <td>113</td>
+      <td>29.2%</td>
+      <td>-11.92</td>
+    </tr>
+    <tr>
+      <td>SK10363</td>
+      <td>Ring Road Motocorp Pvt. Ltd</td>
+      <td>34</td>
+      <td>47.1%</td>
+      <td>28</td>
+      <td>42.9%</td>
+      <td>-4.20</td>
+    </tr>
+    <tr>
+      <td>SK10387</td>
+      <td>PAL PRATEEK AUTOMOBILE LLP</td>
+      <td>50</td>
+      <td>72.0%</td>
+      <td>41</td>
+      <td>73.2%</td>
+      <td>1.17</td>
+    </tr>
+    <tr>
+      <td>SK10361</td>
+      <td>Excel Cars Pvt. Ltd.</td>
+      <td>45</td>
+      <td>46.7%</td>
+      <td>52</td>
+      <td>51.9%</td>
+      <td>5.26</td>
+    </tr>
+    <tr>
+      <td>SK10352</td>
+      <td>ZEDEX SKODA</td>
+      <td>44</td>
+      <td>29.5%</td>
+      <td>41</td>
+      <td>39.0%</td>
+      <td>9.48</td>
+    </tr>
+  </tbody>
+</table></div><h3>Biggest improvers Jul&#x27;26 -&gt; Aug&#x27;26</h3><div class='tw'><table class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>dealer_code</th>
+      <th>dealer_name</th>
+      <th>Base Jul'26</th>
+      <th>Ret % Jul'26</th>
+      <th>Base Aug'26</th>
+      <th>Ret % Aug'26</th>
+      <th>Change (pts)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>SK10352</td>
+      <td>ZEDEX SKODA</td>
+      <td>44</td>
+      <td>29.5%</td>
+      <td>41</td>
+      <td>39.0%</td>
+      <td>9.48</td>
+    </tr>
+    <tr>
+      <td>SK10361</td>
+      <td>Excel Cars Pvt. Ltd.</td>
+      <td>45</td>
+      <td>46.7%</td>
+      <td>52</td>
+      <td>51.9%</td>
+      <td>5.26</td>
+    </tr>
+    <tr>
+      <td>SK10387</td>
+      <td>PAL PRATEEK AUTOMOBILE LLP</td>
+      <td>50</td>
+      <td>72.0%</td>
+      <td>41</td>
+      <td>73.2%</td>
+      <td>1.17</td>
+    </tr>
+    <tr>
+      <td>SK10363</td>
+      <td>Ring Road Motocorp Pvt. Ltd</td>
+      <td>34</td>
+      <td>47.1%</td>
+      <td>28</td>
+      <td>42.9%</td>
+      <td>-4.20</td>
+    </tr>
+    <tr>
+      <td>SK10277</td>
+      <td>Jai Auto Vehicles Pvt Ltd</td>
+      <td>107</td>
+      <td>41.1%</td>
+      <td>113</td>
+      <td>29.2%</td>
+      <td>-11.92</td>
+    </tr>
+  </tbody>
+</table></div><h2>New-car penetration (policies at sale vs retail)</h2><div class='chart'><div style="height:340px; width:100%;">                            <div id="1d56a326-d2e8-4038-be4f-e5035d079c0e" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("1d56a326-d2e8-4038-be4f-e5035d079c0e")) {                    Plotly.newPlot(                        "1d56a326-d2e8-4038-be4f-e5035d079c0e",                        [{"cliponaxis":false,"hovertemplate":"%{x}\u003cbr\u003eRetail: %{y:,.0f}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#1F5B3F","line":{"width":0}},"name":"Retail","textfont":{"color":"#3E4C59","size":11},"textposition":"outside","x":["Jan'26","Feb'26","Mar'26","Apr'26","May'26","Jun'26","Jul'26","Aug'26"],"y":[473.0,493.0,522.0,563.0,442.0,462.0,373.0,317.0],"type":"bar"},{"cliponaxis":false,"hovertemplate":"%{x}\u003cbr\u003eNew policies: %{y:,.0f}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#B08A3C","line":{"width":0}},"name":"New policies","textfont":{"color":"#3E4C59","size":11},"textposition":"outside","x":["Jan'26","Feb'26","Mar'26","Apr'26","May'26","Jun'26","Jul'26","Aug'26"],"y":[241.0,233.0,290.0,253.0,202.0,198.0,180.0,209.0],"type":"bar"}],                        {"template":{"data":{"candlestick":[{"decreasing":{"line":{"color":"#000033"}},"increasing":{"line":{"color":"#000032"}},"type":"candlestick"}],"contourcarpet":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"contourcarpet"}],"contour":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"contour"}],"heatmap":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"heatmap"}],"histogram2d":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"histogram2d"}],"icicle":[{"textfont":{"color":"white"},"type":"icicle"}],"sankey":[{"textfont":{"color":"#000036"},"type":"sankey"}],"scatter":[{"marker":{"line":{"width":0}},"type":"scatter"}],"table":[{"cells":{"fill":{"color":"#000038"},"font":{"color":"#000037"},"line":{"color":"#000039"}},"header":{"fill":{"color":"#000040"},"font":{"color":"#000036"},"line":{"color":"#000039"}},"type":"table"}],"waterfall":[{"connector":{"line":{"color":"#000036","width":2}},"decreasing":{"marker":{"color":"#000033"}},"increasing":{"marker":{"color":"#000032"}},"totals":{"marker":{"color":"#000034"}},"type":"waterfall"}]},"layout":{"coloraxis":{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]]},"colorscale":{"diverging":[[0.0,"#000021"],[0.1111111111111111,"#000022"],[0.2222222222222222,"#000023"],[0.3333333333333333,"#000024"],[0.4444444444444444,"#000025"],[0.5555555555555556,"#000026"],[0.6666666666666666,"#000027"],[0.7777777777777778,"#000028"],[0.8888888888888888,"#000029"],[1.0,"#000030"]],"sequential":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"sequentialminus":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]]},"colorway":["#000001","#000002","#000003","#000004","#000005","#000006","#000007","#000008","#000009","#000010"]}},"yaxis":{"tickformat":",.0f","tickfont":{"color":"#6B7A88"},"showgrid":true,"gridcolor":"#E6EAEE","linecolor":"#D5DBE0","zeroline":false},"title":{"font":{"size":14,"color":"#14202B","family":"Archivo, IBM Plex Sans, system-ui, -apple-system, Segoe UI, sans-serif"},"text":"\u003cb\u003eCars retailed vs new policies written\u003c\u002fb\u003e","x":0,"xanchor":"left"},"margin":{"l":8,"r":28,"t":52,"b":8},"legend":{"font":{"color":"#3E4C59","size":11},"orientation":"h","y":1.0,"x":1,"xanchor":"right","yanchor":"bottom"},"hoverlabel":{"font":{"color":"#14202B"},"bgcolor":"#ffffff","bordercolor":"#E6EAEE"},"font":{"family":"IBM Plex Sans, system-ui, -apple-system, Segoe UI, sans-serif","size":12,"color":"#3E4C59"},"height":340,"bargap":0.3,"bargroupgap":0.08,"barcornerradius":4,"hovermode":"closest","showlegend":true,"paper_bgcolor":"#FFFFFF","plot_bgcolor":"#FFFFFF","xaxis":{"tickfont":{"color":"#6B7A88"},"showgrid":false,"gridcolor":"#E6EAEE","linecolor":"#D5DBE0","zeroline":false}},                        {"displaylogo": false, "responsive": true}                    )                };            </script>        </div></div><div class='chart'><div style="height:340px; width:100%;">                            <div id="ad0084a1-108a-4485-a7d4-86c0f99c0790" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("ad0084a1-108a-4485-a7d4-86c0f99c0790")) {                    Plotly.newPlot(                        "ad0084a1-108a-4485-a7d4-86c0f99c0790",                        [{"hovertemplate":"Penetration %: %{y:.1%}\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#1F5B3F","width":2},"marker":{"line":{"color":"#FFFFFF","width":2},"size":8},"mode":"lines+markers","name":"Penetration %","x":["Jan'26","Feb'26","Mar'26","Apr'26","May'26","Jun'26","Jul'26","Aug'26"],"y":[0.5095137420718816,0.4726166328600406,0.5555555555555556,0.4493783303730018,0.45701357466063347,0.42857142857142855,0.48257372654155495,0.6593059936908517],"type":"scatter"}],                        {"template":{"data":{"candlestick":[{"decreasing":{"line":{"color":"#000033"}},"increasing":{"line":{"color":"#000032"}},"type":"candlestick"}],"contourcarpet":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"contourcarpet"}],"contour":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"contour"}],"heatmap":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"heatmap"}],"histogram2d":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"histogram2d"}],"icicle":[{"textfont":{"color":"white"},"type":"icicle"}],"sankey":[{"textfont":{"color":"#000036"},"type":"sankey"}],"scatter":[{"marker":{"line":{"width":0}},"type":"scatter"}],"table":[{"cells":{"fill":{"color":"#000038"},"font":{"color":"#000037"},"line":{"color":"#000039"}},"header":{"fill":{"color":"#000040"},"font":{"color":"#000036"},"line":{"color":"#000039"}},"type":"table"}],"waterfall":[{"connector":{"line":{"color":"#000036","width":2}},"decreasing":{"marker":{"color":"#000033"}},"increasing":{"marker":{"color":"#000032"}},"totals":{"marker":{"color":"#000034"}},"type":"waterfall"}]},"layout":{"coloraxis":{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]]},"colorscale":{"diverging":[[0.0,"#000021"],[0.1111111111111111,"#000022"],[0.2222222222222222,"#000023"],[0.3333333333333333,"#000024"],[0.4444444444444444,"#000025"],[0.5555555555555556,"#000026"],[0.6666666666666666,"#000027"],[0.7777777777777778,"#000028"],[0.8888888888888888,"#000029"],[1.0,"#000030"]],"sequential":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"sequentialminus":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]]},"colorway":["#000001","#000002","#000003","#000004","#000005","#000006","#000007","#000008","#000009","#000010"]}},"yaxis":{"tickformat":".0%","tickfont":{"color":"#6B7A88"},"showgrid":true,"gridcolor":"#E6EAEE","linecolor":"#D5DBE0","zeroline":false},"title":{"font":{"size":14,"color":"#14202B","family":"Archivo, IBM Plex Sans, system-ui, -apple-system, Segoe UI, sans-serif"},"text":"\u003cb\u003ePenetration % by month\u003c\u002fb\u003e","x":0,"xanchor":"left"},"margin":{"l":8,"r":28,"t":52,"b":8},"legend":{"font":{"color":"#3E4C59","size":11},"orientation":"h","y":1.0,"x":1,"xanchor":"right","yanchor":"bottom"},"hoverlabel":{"font":{"color":"#14202B"},"bgcolor":"#ffffff","bordercolor":"#E6EAEE"},"font":{"family":"IBM Plex Sans, system-ui, -apple-system, Segoe UI, sans-serif","size":12,"color":"#3E4C59"},"height":340,"bargap":0.3,"bargroupgap":0.08,"barcornerradius":4,"hovermode":"x unified","showlegend":false,"paper_bgcolor":"#FFFFFF","plot_bgcolor":"#FFFFFF","xaxis":{"tickfont":{"color":"#6B7A88"},"showgrid":false,"gridcolor":"#E6EAEE","linecolor":"#D5DBE0","zeroline":false}},                        {"displaylogo": false, "responsive": true}                    )                };            </script>        </div></div><div class='tw'><table class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Month</th>
+      <th>Retail</th>
+      <th>New NOP</th>
+      <th>Penetration %</th>
+      <th>Renewal base</th>
+      <th>Renewed</th>
+      <th>Renewal ret %</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Jan'26</td>
+      <td>473</td>
+      <td>241</td>
+      <td>51.0%</td>
+      <td>211</td>
+      <td>109</td>
+      <td>51.7%</td>
+    </tr>
+    <tr>
+      <td>Feb'26</td>
+      <td>493</td>
+      <td>233</td>
+      <td>47.3%</td>
+      <td>275</td>
+      <td>132</td>
+      <td>48.0%</td>
+    </tr>
+    <tr>
+      <td>Mar'26</td>
+      <td>522</td>
+      <td>290</td>
+      <td>55.6%</td>
+      <td>367</td>
+      <td>198</td>
+      <td>54.0%</td>
+    </tr>
+    <tr>
+      <td>Apr'26</td>
+      <td>563</td>
+      <td>253</td>
+      <td>44.9%</td>
+      <td>352</td>
+      <td>157</td>
+      <td>44.6%</td>
+    </tr>
+    <tr>
+      <td>May'26</td>
+      <td>442</td>
+      <td>202</td>
+      <td>45.7%</td>
+      <td>315</td>
+      <td>139</td>
+      <td>44.1%</td>
+    </tr>
+    <tr>
+      <td>Jun'26</td>
+      <td>462</td>
+      <td>198</td>
+      <td>42.9%</td>
+      <td>307</td>
+      <td>143</td>
+      <td>46.6%</td>
+    </tr>
+    <tr>
+      <td>Jul'26</td>
+      <td>373</td>
+      <td>180</td>
+      <td>48.3%</td>
+      <td>289</td>
+      <td>123</td>
+      <td>42.6%</td>
+    </tr>
+    <tr>
+      <td>Aug'26</td>
+      <td>317</td>
+      <td>209</td>
+      <td>65.9%</td>
+      <td>291</td>
+      <td>130</td>
+      <td>44.7%</td>
+    </tr>
+  </tbody>
+</table></div><ul><li>Aug&#x27;26 penetration at onboarded dealers 65.9% on 317 cars retailed; 157 cars left without a programme policy.</li><li>5 onboarded dealer codes retailed 5+ cars but wrote no new policy: Ring Road Motocorp Pvt. Ltd (SK10359), Jai Auto Vehicles Pvt Ltd (SK10281), Jai Auto Vehicles Pvt Ltd (SK2027701A), PAL PRATEEK AUTOMOBILE LLP (SK1038701A), Jai Auto Vehicles Pvt Ltd (SK1028101A).</li></ul><h3>Largest penetration gaps - Aug&#x27;26</h3><div class='tw'><table class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Code</th>
+      <th>Dealer</th>
+      <th>RM</th>
+      <th>ZM</th>
+      <th>Retail</th>
+      <th>New NOP</th>
+      <th>Penetration %</th>
+      <th>Missed policies</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>SK10359</td>
+      <td>Ring Road Motocorp Pvt. Ltd</td>
+      <td>VIVEK JOSHI</td>
+      <td>NAMAN SINGH</td>
+      <td>33</td>
+      <td>0</td>
+      <td>0.0%</td>
+      <td>33</td>
+    </tr>
+    <tr>
+      <td>SK10363</td>
+      <td>Ring Road Motocorp Pvt. Ltd</td>
+      <td>VIVEK JOSHI</td>
+      <td>NAMAN SINGH</td>
+      <td>45</td>
+      <td>12</td>
+      <td>26.7%</td>
+      <td>33</td>
+    </tr>
+    <tr>
+      <td>SK10281</td>
+      <td>Jai Auto Vehicles Pvt Ltd</td>
+      <td>VIVEK JOSHI</td>
+      <td>NAMAN SINGH</td>
+      <td>27</td>
+      <td>0</td>
+      <td>0.0%</td>
+      <td>27</td>
+    </tr>
+    <tr>
+      <td>SK10352</td>
+      <td>Shekhawati Electronics Pvt Ltd(Zedex)</td>
+      <td>VIVEK JOSHI</td>
+      <td>NAMAN SINGH</td>
+      <td>60</td>
+      <td>40</td>
+      <td>66.7%</td>
+      <td>20</td>
+    </tr>
+    <tr>
+      <td>SK10361</td>
+      <td>Excel Cars Pvt. Ltd.</td>
+      <td>VIVEK JOSHI</td>
+      <td>NAMAN SINGH</td>
+      <td>65</td>
+      <td>49</td>
+      <td>75.4%</td>
+      <td>16</td>
+    </tr>
+    <tr>
+      <td>SK2027701A</td>
+      <td>Jai Auto Vehicles Pvt Ltd</td>
+      <td>VIVEK JOSHI</td>
+      <td>NAMAN SINGH</td>
+      <td>9</td>
+      <td>0</td>
+      <td>0.0%</td>
+      <td>9</td>
+    </tr>
+    <tr>
+      <td>SK1038701A</td>
+      <td>PAL PRATEEK AUTOMOBILE LLP</td>
+      <td>VIVEK JOSHI</td>
+      <td>NAMAN SINGH</td>
+      <td>8</td>
+      <td>0</td>
+      <td>0.0%</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <td>SK1028101A</td>
+      <td>Jai Auto Vehicles Pvt Ltd</td>
+      <td>VIVEK JOSHI</td>
+      <td>NAMAN SINGH</td>
+      <td>6</td>
+      <td>0</td>
+      <td>0.0%</td>
+      <td>6</td>
+    </tr>
+    <tr>
+      <td>SK10408</td>
+      <td>Malwa Motor Sales Pvt. Ltd</td>
+      <td>VIVEK JOSHI</td>
+      <td>NAMAN SINGH</td>
+      <td>25</td>
+      <td>20</td>
+      <td>80.0%</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <td>SK10277</td>
+      <td>Jai Auto Vehicles Pvt Ltd</td>
+      <td>VIVEK JOSHI</td>
+      <td>NAMAN SINGH</td>
+      <td>18</td>
+      <td>62</td>
+      <td>344.4%</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>SK10387</td>
+      <td>PAL PRATEEK AUTOMOBILE LLP</td>
+      <td>VIVEK JOSHI</td>
+      <td>NAMAN SINGH</td>
+      <td>15</td>
+      <td>19</td>
+      <td>126.7%</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>SK2035901C</td>
+      <td>Ring Road Motocorp Pvt. Ltd</td>
+      <td>VIVEK JOSHI</td>
+      <td>NAMAN SINGH</td>
+      <td>0</td>
+      <td>0</td>
+      <td></td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table></div><h2>Dealer payouts pending</h2><div class='kpis'><div class='kpi'><div class='l'>Pending invoices</div><div class='v'>10</div><div class='n'></div></div><div class='kpi'><div class='l'>Pending value</div><div class='v'>₹6.6 L</div><div class='n'>base value</div></div><div class='kpi'><div class='l'>Paid to date</div><div class='v'>₹4.87 Cr</div><div class='n'>312 invoices</div></div></div><h3>Pending by status</h3><div class='tw'><table class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Status</th>
+      <th>Invoices</th>
+      <th>Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Invoice Not uploaded on Portal</td>
+      <td>8</td>
+      <td>560,772.29</td>
+    </tr>
+    <tr>
+      <td>Discrepancy in uploaded invoice, re-upload with correct details</td>
+      <td>2</td>
+      <td>95,081.60</td>
+    </tr>
+  </tbody>
+</table></div><h3>Dealers with the most pending</h3><div class='tw'><table class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Code</th>
+      <th>Dealer</th>
+      <th>RM</th>
+      <th>Invoices</th>
+      <th>Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>SK10387</td>
+      <td>PAL PRATEEK AUTOMOBILE LLP</td>
+      <td>VIVEK JOSHI</td>
+      <td>3</td>
+      <td>335,733.35</td>
+    </tr>
+    <tr>
+      <td>SK10352</td>
+      <td>SHEKHAWATI ELECTRONICS PVT LTD</td>
+      <td>VIVEK JOSHI</td>
+      <td>1</td>
+      <td>128,524.92</td>
+    </tr>
+    <tr>
+      <td>SK10277</td>
+      <td>JAI AUTO VEHICLES PRIVATE LIMITED</td>
+      <td>VIVEK JOSHI</td>
+      <td>2</td>
+      <td>63,906.32</td>
+    </tr>
+    <tr>
+      <td>SK10361</td>
+      <td>EXCEL CARS PVT LTD</td>
+      <td>VIVEK JOSHI</td>
+      <td>1</td>
+      <td>47,750.92</td>
+    </tr>
+    <tr>
+      <td>SK10408</td>
+      <td>MALWA MOTOR SALES PVT.LTD.</td>
+      <td>VIVEK JOSHI</td>
+      <td>1</td>
+      <td>42,760.52</td>
+    </tr>
+    <tr>
+      <td>SK10363</td>
+      <td>RING ROAD MOTOCORP PRIVATE LTD</td>
+      <td>VIVEK JOSHI</td>
+      <td>1</td>
+      <td>24,640.25</td>
+    </tr>
+    <tr>
+      <td>SK93810395</td>
+      <td>MALWA MOTOR SALES PVT.LTD.</td>
+      <td>VIVEK JOSHI</td>
+      <td>1</td>
+      <td>12,537.61</td>
+    </tr>
+  </tbody>
+</table></div><footer>Generated 30 Sep 2026 09:37 · MIS Agent</footer></main></body></html>
