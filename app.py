@@ -1,13 +1,17 @@
-"""MIS Agent - agentic retention MIS with OEM dashboards, insights, charts and HTML / PDF / PPT / CSV export.
+"""MIS Retention Analyst - all OEMs. Layout and theme follow the RESP Retention Analyst: top bar with chips, KPI strip,
+tabbed main panel + Claude chat panel on the right. Click any dealer / RM / ZM row to open its dashboard; every
+dashboard, lookup and answer exports to HTML / PDF / PPT / CSV.
 
-Run locally:   streamlit run app.py
-Deploy:        see README.md (Streamlit Community Cloud or Hugging Face Spaces - both free)
+Run locally:   streamlit run app.py        Deploy: see README.md
 """
 from __future__ import annotations
 
+import datetime as dt
 import hashlib
+import html
 import json
 import os
+import re
 import tempfile
 import time
 
@@ -15,19 +19,128 @@ import pandas as pd
 import streamlit as st
 
 from mis import analytics as A
-from mis.agent import PROVIDERS, offline_answer, run_agent
-from mis.charts import to_plotly
+from mis import ra
+from mis.agent import DEFAULT_MODEL, EFFORTS, run_agent
+from mis.charts import BRASS, to_plotly
 from mis.loaders import FILE_TYPES, load_folder
-from mis.model import CATALOG, OEM_LABEL, OEMS, TARGETS
-from mis.report import Report, display_df, export
+from mis.model import CATALOG, OEM_LABEL, OEMS, TARGETS, re_zm
+from mis.report import PCT_HINT, Report, export, fmt_cell
 
-st.set_page_config(page_title="MIS Agent", page_icon="📊", layout="wide", initial_sidebar_state="expanded")
-st.markdown("""<style>
-.block-container{padding-top:3.2rem;padding-bottom:3rem}
-div[data-testid="stMetric"]{background:var(--secondary-background-color);border-radius:10px;padding:10px 12px;border:1px solid rgba(128,128,128,.18)}
-div[data-testid="stMetricValue"]{font-size:1.55rem}
-.small{opacity:.7;font-size:.85rem}
+st.set_page_config(page_title="MIS Retention Analyst", page_icon="📊", layout="wide", initial_sidebar_state="collapsed")
+
+# --------------------------------------------------------------------------- #
+# theme (RESP Retention Analyst tokens)
+# --------------------------------------------------------------------------- #
+st.markdown("""
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --ground:#EEF1F4; --surface:#FFFFFF; --surface-2:#F6F8F9; --line:#D5DBE0; --line-soft:#E6EAEE;
+  --ink:#14202B; --ink-2:#3E4C59; --ink-3:#6B7A88;
+  --accent:#1F5B3F; --accent-ink:#FFFFFF; --accent-soft:#E3EFE8; --brass:#B08A3C; --brass-soft:#F4EBD6;
+  --bad:#B3261E; --bad-soft:#F9E5E3; --warn:#9A6B00; --warn-soft:#FBF1D6; --good:#1F5B3F;
+  --shadow:0 1px 2px rgba(20,32,43,.06),0 8px 24px -12px rgba(20,32,43,.18);
+  --radius:10px; --font-d:"Archivo",system-ui,sans-serif; --font-b:"IBM Plex Sans",system-ui,sans-serif;
+}
+/* streamlit chrome off */
+header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecoration"], footer, #MainMenu,
+[data-testid="stSidebar"], [data-testid="stSidebarCollapsedControl"], [data-testid="stStatusWidget"] {display:none !important}
+.stApp{background:var(--ground)}
+html, body, .stApp, .stMarkdown, p, li, label, input, textarea, select, button, [data-testid="stWidgetLabel"]{font-family:var(--font-b) !important}
+h1,h2,h3,h4{font-family:var(--font-d) !important;color:var(--ink)}
+.block-container{max-width:1480px;padding:0 16px 32px !important}
+.num{font-variant-numeric:tabular-nums}
+/* top bar */
+.top{background:var(--surface);border:1px solid var(--line);border-top:0;border-radius:0 0 var(--radius) var(--radius);
+  display:flex;align-items:center;gap:16px;padding:12px 16px;flex-wrap:wrap;margin:0 0 4px}
+.brand{display:flex;align-items:center;gap:12px}
+.brand .mark{width:34px;height:34px;border-radius:8px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;
+  font-family:var(--font-d);font-weight:700;font-size:13px;letter-spacing:.5px}
+.brand h1{font-size:17px !important;font-weight:600;letter-spacing:.2px;margin:0 !important;padding:0 !important}
+.brand p{margin:0;font-size:12px;color:var(--ink-3)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+.chip{font-size:12px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink-2);white-space:nowrap}
+.chip b{color:var(--ink);font-weight:600}
+/* kpi strip */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin:12px 0 4px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;display:grid;gap:6px;box-shadow:var(--shadow)}
+.kpi .lbl{font-family:var(--font-d);font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+.kpi .val{font-family:var(--font-d);font-size:36px;line-height:1;font-weight:700;letter-spacing:-.5px;color:var(--ink)}
+.kpi .val.bad{color:var(--bad)}
+.kpi .sub{font-size:12.5px;color:var(--ink-2)}
+.kpi .bar{height:6px;background:var(--line-soft);border-radius:3px;position:relative;overflow:hidden;margin-top:2px}
+.kpi .bar i{position:absolute;left:0;top:0;bottom:0;background:var(--accent);border-radius:3px}
+.kpi .bar em{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--brass)}
+.kpi .foot{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-3)}
+/* panels = bordered containers */
+.st-key-mainpanel, .st-key-chatpanel{background:var(--surface) !important;border:1px solid var(--line) !important;
+  border-radius:var(--radius) !important;box-shadow:var(--shadow);padding:14px 16px !important}
+.st-key-chatpanel{position:sticky;top:12px}
+.lead, .lead p{font-size:13px !important;color:var(--ink-2) !important;margin:0 0 8px !important}
+.note, .note p{font-size:12.5px !important;color:var(--ink-3) !important;line-height:1.5}
+.stMarkdown p, .stMarkdown li{font-size:13.5px}
+/* tabs */
+[data-baseweb="tab-list"]{gap:2px;border-bottom:1px solid var(--line);overflow-x:auto}
+[data-baseweb="tab"]{background:none !important;padding:10px 14px !important;border-radius:8px 8px 0 0;height:auto !important}
+[data-baseweb="tab"] p{color:var(--ink-3);font-weight:500;font-size:14px}
+[data-baseweb="tab"][aria-selected="true"] p{color:var(--ink);font-weight:600}
+[data-baseweb="tab-highlight"]{background:var(--accent) !important;height:2px !important}
+[data-baseweb="tab-border"]{display:none}
+/* section heads, lead, insight, tiles */
+.view-h{font-family:var(--font-d);font-size:16px;font-weight:600;color:var(--ink);margin:2px 0 2px}
+.lead{margin:0 0 6px;color:var(--ink-2);font-size:13px}
+.sec-h{font-family:var(--font-d);font-size:13px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--ink-3);margin:18px 0 6px}
+.ins{display:grid;gap:6px;margin:4px 0}
+.ins div{padding:8px 10px;border-radius:6px;background:var(--surface-2);border-left:3px solid var(--accent);font-size:13px;color:var(--ink)}
+.ins div.flag{border-left-color:var(--bad)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin:4px 0 6px}
+.tile{background:var(--surface-2);border-radius:8px;padding:12px 14px;display:grid;gap:2px}
+.tile .l{font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.6px;font-family:var(--font-d)}
+.tile .v{font-family:var(--font-d);font-size:24px;font-weight:700;line-height:1.1;color:var(--ink)}
+.tile .v.bad{color:var(--bad)}
+.tile .s{font-size:12px;color:var(--ink-2)}
+/* bar rows */
+.bars{display:grid;gap:6px;margin:6px 0 4px}
+.btitle{font-family:var(--font-d);font-size:13px;font-weight:600;color:var(--ink);margin:10px 0 2px}
+.brow{display:grid;grid-template-columns:190px 1fr 90px;gap:10px;align-items:center;font-size:13px;color:var(--ink)}
+.brow .n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brow .t{position:relative;height:14px;background:var(--line-soft);border-radius:0 4px 4px 0}
+.brow .t i{position:absolute;left:0;top:0;bottom:0;background:var(--accent);border-radius:0 4px 4px 0}
+.brow .t i.lo{background:var(--bad)}
+.brow .t em{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--brass)}
+.brow .v{color:var(--ink-2);text-align:right}
+.legend{display:flex;gap:16px;font-size:12px;color:var(--ink-3);margin-top:4px;flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:-1px;margin-right:6px}
+/* focus (drawer-like) header */
+.focus{border-left:3px solid var(--brass);padding:2px 0 2px 12px;margin:4px 0 6px}
+.focus .k{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--brass);font-family:var(--font-d);font-weight:600}
+/* buttons */
+.stButton button, .stDownloadButton button, [data-testid="stPopover"] button{border:1px solid var(--line) !important;background:var(--surface) !important;
+  color:var(--ink) !important;border-radius:8px !important;font-weight:500 !important;padding:4px 10px !important;min-height:32px !important}
+.stButton button:hover, .stDownloadButton button:hover{background:var(--surface-2) !important;border-color:var(--accent) !important}
+.stButton button[kind="primary"]{background:var(--accent) !important;color:var(--accent-ink) !important;border-color:var(--accent) !important}
+.stButton button p, .stDownloadButton button p{font-size:12.5px !important}
+/* inputs */
+[data-baseweb="select"] > div, .stTextInput input, [data-baseweb="input"]{border-radius:8px !important;border-color:var(--line) !important}
+/* chat */
+.chead{display:flex;align-items:center;gap:10px;padding:2px 0 8px;border-bottom:1px solid var(--line);margin-bottom:6px}
+.chead .dot{width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.chead .dot.off{background:var(--ink-3)}
+.chead h2{font-size:15px !important;font-weight:600;margin:0 !important;padding:0 !important}
+.chead p{margin:0;font-size:12px;color:var(--ink-3)}
+[data-testid="stChatMessage"]{background:transparent;padding:4px 0}
+[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]){background:var(--accent-soft);border-radius:12px 12px 2px 12px;padding:6px 10px}
+[data-testid="stChatMessage"] p, [data-testid="stChatMessage"] li{font-size:13.5px}
+.note{font-size:12px;color:var(--ink-3);padding-top:6px}
+/* data quality */
+.dq{display:grid;gap:8px}
+.dq div{padding:10px 12px;border-radius:8px;background:var(--surface-2);border-left:3px solid var(--warn);font-size:13px;color:var(--ink)}
+.dq div.high{border-left-color:var(--bad)} .dq div.low, .dq div.info{border-left-color:var(--line)}
+.dq b{display:block;margin-bottom:2px}
+[data-testid="stDataFrame"]{border:1px solid var(--line-soft);border-radius:8px}
 </style>""", unsafe_allow_html=True)
+
+esc = html.escape
 
 
 def secret(key, default=None):
@@ -44,14 +157,18 @@ def login_gate():
     pw = secret("APP_PASSWORD")
     if not pw or st.session_state.get("authed"):
         return
-    st.title("📊 MIS Agent")
-    with st.form("login"):
-        p = st.text_input("Password", type="password")
-        if st.form_submit_button("Sign in"):
-            if p == pw:
-                st.session_state["authed"] = True
-                st.rerun()
-            st.error("Wrong password")
+    _, mid, _ = st.columns([1, 1.1, 1])
+    with mid:
+        st.markdown("<div style='height:12vh'></div><div class='top' style='border-radius:10px;border-top:1px solid var(--line)'>"
+                    "<div class='brand'><div class='mark'>MIS</div><div><h1>MIS Retention Analyst</h1>"
+                    "<p>Sign in to continue</p></div></div></div>", unsafe_allow_html=True)
+        with st.form("login", border=True):
+            p = st.text_input("Password", type="password")
+            if st.form_submit_button("Sign in", type="primary", width="stretch"):
+                if p.strip() == str(pw).strip():
+                    st.session_state["authed"] = True
+                    st.rerun()
+                st.error("Wrong password")
     st.stop()
 
 
@@ -62,6 +179,7 @@ login_gate()
 # --------------------------------------------------------------------------- #
 DATA_DIR = secret("DATA_DIR") or os.path.join(tempfile.gettempdir(), "mis_agent_data")
 os.makedirs(DATA_DIR, exist_ok=True)
+S = st.session_state
 
 
 def folder_sig(folder):
@@ -77,269 +195,503 @@ def get_pack(folder, sig):
 
 def sa_info():
     try:
-        v = st.secrets["gcp_service_account"]
-        return dict(v)
+        return dict(st.secrets["gcp_service_account"])
     except Exception:
         raw = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")
         return json.loads(raw) if raw else None
 
 
-def do_drive_sync():
+def drive_sync():
     from mis.drive import sync
-    bar = st.sidebar.progress(0.0, "Connecting to Google Drive…")
+    bar = st.progress(0.0, "Connecting to Google Drive…")
     try:
-        got = sync(sa_info(), DATA_DIR, secret("DRIVE_FOLDER_ID"), progress=lambda f, n: bar.progress(f, f"Downloading {n[:40]}…"))
-        st.session_state["last_sync"] = time.strftime("%d %b %H:%M")
-        st.sidebar.success(f"Synced {len(got)} files from Drive")
+        got = sync(sa_info(), DATA_DIR, secret("DRIVE_FOLDER_ID"), progress=lambda f, n: bar.progress(f, f"Downloading {n[:48]}…"))
+        S["last_sync"] = time.strftime("%d %b %H:%M")
+        st.toast(f"Synced {len(got)} files from Google Drive")
     except Exception as e:
-        st.sidebar.error(f"Drive sync failed: {type(e).__name__}: {e}")
+        st.error(f"Drive sync failed: {type(e).__name__}: {e}")
     bar.empty()
 
 
-with st.sidebar:
-    st.markdown("## 📊 MIS Agent")
-    src = st.radio("Data source", ["Google Drive", "Upload files"], horizontal=True,
-                   index=0 if sa_info() else 1, help="Drive needs a service account in the app secrets (see README).")
-    if src == "Google Drive":
-        if not sa_info():
-            st.warning("No Google service account configured - add `gcp_service_account` to secrets, or upload files.")
+def data_controls():
+    st.markdown("<div class='sec-h'>Data source</div>", unsafe_allow_html=True)
+    c1, c2 = st.columns([1, 1])
+    with c1:
+        if sa_info():
+            if st.button("🔄 Sync latest MIS from Google Drive", type="primary", width="stretch"):
+                drive_sync(); st.rerun()
+            st.caption(f"Last sync {S.get('last_sync', '—')} · newest file of each type is used")
         else:
-            auto = not os.listdir(DATA_DIR) and "synced_once" not in st.session_state
-            if st.button("🔄 Sync latest MIS from Drive", use_container_width=True) or auto:
-                st.session_state["synced_once"] = True
-                do_drive_sync()
-            if st.session_state.get("last_sync"):
-                st.caption(f"Last sync {st.session_state['last_sync']}")
-    else:
-        up = st.file_uploader("Drop the day's MIS workbooks", type=["xlsx", "xlsb", "xlsm"], accept_multiple_files=True)
+            st.caption("Google Drive sync is off - add a service account to the app secrets (see README). Upload files instead.")
+    with c2:
+        up = st.file_uploader("Upload MIS workbooks", type=["xlsx", "xlsb", "xlsm"], accept_multiple_files=True, label_visibility="collapsed")
         if up:
             for f in up:
                 with open(os.path.join(DATA_DIR, f.name), "wb") as fh:
                     fh.write(f.getbuffer())
-            st.success(f"{len(up)} files saved")
+            st.toast(f"{len(up)} files saved"); st.rerun()
+
 
 files_present = [f for f in os.listdir(DATA_DIR) if f.lower().endswith((".xlsx", ".xlsb", ".xlsm"))]
+if not files_present and sa_info() and "auto_synced" not in S:
+    S["auto_synced"] = True
+    drive_sync()
+    files_present = [f for f in os.listdir(DATA_DIR) if f.lower().endswith((".xlsx", ".xlsb", ".xlsm"))]
 if not files_present:
-    st.title("📊 MIS Agent")
-    st.info("No MIS files yet. Sync from Google Drive or upload the workbooks from the sidebar.")
+    st.markdown("<div class='top'><div class='brand'><div class='mark'>MIS</div><div><h1>MIS Retention Analyst</h1>"
+                "<p>No MIS files loaded yet</p></div></div></div>", unsafe_allow_html=True)
+    with st.container(border=True):
+        data_controls()
     st.stop()
 
 DATA_SIG = folder_sig(DATA_DIR)
 with st.spinner("Reading MIS workbooks… (first load ~30-60 s, then cached)"):
     pack = get_pack(DATA_DIR, DATA_SIG)
 
-# --------------------------------------------------------------------------- #
-# settings: AI + targets
-# --------------------------------------------------------------------------- #
-with st.sidebar:
-    st.divider()
-    with st.expander("🤖 AI model", expanded=False):
-        default_p = secret("LLM_PROVIDER", "gemini")
-        provider = st.selectbox("Provider", list(PROVIDERS), index=list(PROVIDERS).index(default_p) if default_p in PROVIDERS else 0,
-                                format_func=lambda x: {"gemini": "Google Gemini (free key)", "groq": "Groq (free key)",
-                                                       "openrouter": "OpenRouter (free models)", "openai": "OpenAI",
-                                                       "anthropic": "Anthropic Claude"}[x])
-        key_secret = secret("LLM_API_KEY") or secret(f"{provider.upper()}_API_KEY")
-        api_key = st.text_input("API key", type="password", value="", placeholder="using key from secrets" if key_secret else "paste key (kept for this session only)")
-        api_key = api_key or key_secret or ""
-        model = st.text_input("Model", value=secret("LLM_MODEL", "") or PROVIDERS[provider]["model"])
-        st.caption("No key? The agent still answers using the built-in offline analyst.")
-    with st.expander("🎯 Targets", expanded=False):
-        tgt = st.session_state.setdefault("targets", json.loads(secret("TARGETS_JSON", "null") or "null") or json.loads(json.dumps(TARGETS)))
-        for o in OEMS:
-            c1, c2, c3 = st.columns(3)
-            tgt[o]["FY"] = c1.number_input(f"{OEM_LABEL[o][:10]} FY%", 0, 100, int(round(tgt[o]["FY"] * 100)), key=f"t{o}fy") / 100
-            tgt[o]["OY"] = c2.number_input("OY%", 0, 100, int(round(tgt[o]["OY"] * 100)), key=f"t{o}oy") / 100
-            tgt[o]["TOT"] = c3.number_input("Total%", 0, 100, int(round(tgt[o]["TOT"] * 100)), key=f"t{o}tot") / 100
-        st.caption("RE FY 30% and Volvo 75% come from the MIS files; Audi/Skoda/VW targets are placeholders - set yours.")
-    for o in OEMS:
-        TARGETS[o].update(st.session_state["targets"][o])
-    st.divider()
-    st.caption(" · ".join(f"{k}: {v}" for k, v in pack.asof.items()))
-    pins = st.session_state.setdefault("pins", [])
-    if pins:
-        st.markdown(f"**📌 Report pack ({len(pins)})**")
-        for i, p_ in enumerate(pins):
-            st.caption(f"{i + 1}. {p_.title}")
-        combo = Report("MIS report pack", " · ".join(f"{k} as of {v}" for k, v in pack.asof.items()))
-        for p_ in pins:
-            combo.h(p_.title); combo.extend(p_)
-        st.session_state["combo"] = combo
-        if st.button("Clear pack", use_container_width=True):
-            st.session_state["pins"] = []; st.rerun()
+# settings live in session state (targets, Claude)
+S.setdefault("targets", json.loads(secret("TARGETS_JSON", "null") or "null") or json.loads(json.dumps(TARGETS)))
+for o in OEMS:
+    TARGETS[o].update(S["targets"][o])
+S.setdefault("amber", 10); S.setdefault("min_base", 10); S.setdefault("zm", "All zones")
+A.set_criteria(S["amber"] / 100, S["min_base"])
+S.setdefault("model", secret("CLAUDE_MODEL", DEFAULT_MODEL))
+S.setdefault("effort", secret("CLAUDE_EFFORT", "high"))
+API_KEY = S.get("api_key") or secret("ANTHROPIC_API_KEY") or ""
+S.setdefault("pins", []); S.setdefault("chat", []); S.setdefault("exports", {}); S.setdefault("handled", {})
 
 
 # --------------------------------------------------------------------------- #
-# rendering
+# rendering helpers
 # --------------------------------------------------------------------------- #
-def export_bar(rep: Report, key: str):
-    cols = st.columns([1, 1, 1, 1, 1.3, 3])
-    labels = {"html": "🌐 HTML", "pdf": "📄 PDF", "pptx": "📽️ PPT", "csv": "🧮 CSV"}
-    cache = st.session_state.setdefault("exports", {})
-    sig = hashlib.md5(f"{key}|{rep.title}|{len(rep.blocks)}|{DATA_SIG}|{json.dumps(TARGETS, sort_keys=True)}".encode()).hexdigest()[:12]
-    for c, fmt in zip(cols, ("html", "pdf", "pptx", "csv")):
-        ck = f"{sig}:{fmt}"
-        if fmt in ("html", "csv") or ck in cache:
-            if ck not in cache:
-                cache[ck] = export(rep, fmt)
-            data, fn, mime = cache[ck]
-            c.download_button(labels[fmt], data, file_name=fn, mime=mime, key=f"dl{ck}", use_container_width=True)
-        else:
-            if c.button(labels[fmt], key=f"mk{ck}", use_container_width=True, help=f"Build the {fmt.upper()}"):
-                with st.spinner(f"Building {fmt.upper()}…"):
-                    cache[ck] = export(rep, fmt)
+def fmt_date(s):
+    try:
+        return dt.date.fromisoformat(str(s)[:10]).strftime("%d %b %Y")
+    except ValueError:
+        return str(s)
+
+
+def entity_of(df: pd.DataFrame):
+    """Which entity a table's rows are: dealer (has Code), RM, or ZM - and the column holding the id."""
+    cols = {c.lower(): c for c in df.columns}
+    for c in ("code", "dealer_code"):
+        if c in cols: return "dealer", cols[c]
+    for c in ("rm",):
+        if c in cols: return "rm", cols[c]
+    for c in ("zm",):
+        if c in cols: return "zm", cols[c]
+    return None, None
+
+
+RAG_ICON = {"Red": "🔴 Red", "Amber": "🟠 Amber", "Green": "🟢 Green"}
+
+
+def show_table(df: pd.DataFrame, key: str, title: str = ""):
+    if title: st.markdown(f"<div class='btitle'>{esc(title)}</div>", unsafe_allow_html=True)
+    d = df.copy()
+    cfg = {}
+    for c in d.columns:
+        s = d[c]
+        if c == "RAG":
+            d[c] = s.map(lambda v: RAG_ICON.get(v, v))
+        elif pd.api.types.is_bool_dtype(s):
+            d[c] = s.map({True: "Yes", False: "No"})
+        elif pd.api.types.is_datetime64_any_dtype(s):
+            cfg[c] = st.column_config.DateColumn(c, format="DD MMM YYYY")
+        elif pd.api.types.is_numeric_dtype(s):
+            v = pd.to_numeric(s, errors="coerce")
+            if PCT_HINT.search(str(c)) and v.dropna().abs().max() <= 5 and "pts" not in c.lower():
+                d[c] = v * 100; cfg[c] = st.column_config.NumberColumn(c, format="%.1f%%")
+            elif "pts" in c.lower():
+                cfg[c] = st.column_config.NumberColumn(c, format="%+.1f")
+            elif (v.dropna() % 1 != 0).any() and v.abs().max() < 1000:
+                cfg[c] = st.column_config.NumberColumn(c, format="%.2f")
+            else:
+                cfg[c] = st.column_config.NumberColumn(c, format="localized")
+    kind, idcol = entity_of(d)
+    h = min(440, 38 + 35 * len(d))
+    if kind:
+        ev = st.dataframe(d, hide_index=True, width="stretch", height=h, column_config=cfg,
+                          on_select="rerun", selection_mode="single-row", key=f"tb{key}")
+        rows = ev.selection.rows if ev and hasattr(ev, "selection") else []
+        if rows:
+            val = str(df.iloc[rows[0]][idcol])
+            token = f"{rows[0]}:{val}"
+            if S["handled"].get(key) != token and val:
+                S["handled"][key] = token
+                S["focus"] = (kind, val)
                 st.rerun()
-    if cols[4].button("📌 Add to pack", key=f"pin{sig}", use_container_width=True,
-                      help="Collect several dashboards / answers and export them as one file"):
-        st.session_state["pins"].append(rep); st.toast("Added to report pack"); st.rerun()
+        st.caption(f"Click a row to open that {'dealer' if kind == 'dealer' else kind.upper()}'s dashboard")
+    else:
+        st.dataframe(d, hide_index=True, width="stretch", height=h, column_config=cfg)
 
 
-def render(rep: Report, key: str, show_title=True):
-    if show_title:
-        st.subheader(rep.title)
-        if rep.subtitle: st.caption(rep.subtitle)
+def html_bars(spec):
+    """RESP-style horizontal bar rows with a brass target marker (single-series hbar charts)."""
+    name, ys = next(iter(spec.series.items()))
+    pairs = [(lab, v) for lab, v in zip(spec.x, ys) if v is not None and v == v]   # no value -> no bar
+    vals = [v for _, v in pairs]
+    top = max(vals + ([spec.target] if spec.target else []) + [0]) or 1
+    rows = []
+    for lab, v in pairs[:40]:
+        w = max(0, v) / top * 100
+        lo = " lo" if spec.target is not None and v < spec.target else ""
+        tm = f"<em style='left:{spec.target / top * 100:.1f}%'></em>" if spec.target is not None else ""
+        txt = f"{v * 100:.1f}%" if spec.pct else f"{v:,.0f}"
+        rows.append(f"<div class='brow'><span class='n' title='{esc(lab)}'>{esc(lab)}</span>"
+                    f"<span class='t'><i class='{lo.strip()}' style='width:{w:.1f}%'></i>{tm}</span><span class='v num'>{txt}</span></div>")
+    leg = ""
+    if spec.target is not None:
+        leg = (f"<div class='legend'><span><i style='background:var(--accent)'></i>At or above target</span>"
+               f"<span><i style='background:var(--bad)'></i>Below target</span>"
+               f"<span><i style='background:var(--brass);width:3px'></i>Target {spec.target * 100 if spec.pct else spec.target:.0f}{'%' if spec.pct else ''}</span></div>")
+    return f"<div class='btitle'>{esc(spec.title)}</div><div class='bars'>{''.join(rows)}</div>{leg}"
+
+
+def export_bar(rep: Report, key: str):
+    sig = hashlib.md5(f"{key}|{rep.title}|{len(rep.blocks)}|{DATA_SIG}|{json.dumps(TARGETS, sort_keys=True)}".encode()).hexdigest()[:12]
+    cols = st.columns([4.6, 1, 1, 1, 1, 1.35])
+    cols[0].markdown("<div class='note' style='padding-top:8px'>Export this view</div>", unsafe_allow_html=True)
+    cache = S["exports"]
+    for c, fmt, lab in zip(cols[1:5], ("html", "pdf", "pptx", "csv"), ("HTML", "PDF", "PPT", "CSV")):
+        ck = f"{sig}:{fmt}"
+        if fmt in ("html", "csv") and ck not in cache:
+            cache[ck] = export(rep, fmt)
+        if ck in cache:
+            data, fn, mime = cache[ck]
+            c.download_button("⬇ " + lab, data, file_name=fn, mime=mime,
+                              key=f"dl{ck}", width="stretch")
+        elif c.button(lab, key=f"mk{ck}", width="stretch", help=f"Build the {lab} file"):
+            with st.spinner(f"Building {fmt.upper()}…"):
+                cache[ck] = export(rep, fmt)
+            st.rerun()
+    if cols[5].button("＋ Report pack", key=f"pin{sig}", width="stretch", help="Collect several views into one export"):
+        S["pins"].append(rep); st.toast("Added to the report pack")
+
+
+def render(rep: Report, key: str, title=True):
+    if title:
+        st.markdown(f"<div class='view-h'>{esc(rep.title)}</div>" + (f"<p class='lead'>{esc(rep.subtitle)}</p>" if rep.subtitle else ""),
+                    unsafe_allow_html=True)
     export_bar(rep, key)
     for i, b in enumerate(rep.blocks):
         if b.kind == "heading":
-            st.markdown(f"#### {b.title}")
+            st.markdown(f"<div class='sec-h'>{esc(b.title)}</div>", unsafe_allow_html=True)
         elif b.kind == "text":
             st.markdown(b.text)
         elif b.kind == "bullets":
-            if b.title: st.markdown(f"**{b.title}**")
-            st.markdown("\n".join(f"- {x}" for x in b.items))
+            items = "".join(f"<div>{_md(x)}</div>" for x in b.items)
+            st.markdown((f"<div class='btitle'>{esc(b.title)}</div>" if b.title else "") + f"<div class='ins'>{items}</div>",
+                        unsafe_allow_html=True)
         elif b.kind == "kpis":
-            if b.title: st.caption(b.title)
-            items = b.items
-            for r0 in range(0, len(items), 6):
-                cs = st.columns(min(6, len(items) - r0))
-                for c, k in zip(cs, items[r0:r0 + 6]):
-                    c.metric(str(k[0]), str(k[1]), help=str(k[2]) if len(k) > 2 and k[2] else None)
-                    if len(k) > 2 and k[2]: c.caption(str(k[2]))
-        elif b.kind == "table":
-            if b.title: st.markdown(f"**{b.title}**")
-            st.dataframe(display_df(b.df), hide_index=True, use_container_width=True,
-                         height=min(420, 38 + 35 * len(b.df)))
-        elif b.kind == "chart":
-            st.plotly_chart(to_plotly(b.chart), use_container_width=True, key=f"ch{key}{i}",
-                            config={"displaylogo": False})
+            tiles = "".join(f"<div class='tile'><span class='l'>{esc(str(k[0]))}</span><span class='v num'>{esc(str(k[1]))}</span>"
+                            f"<span class='s'>{esc(str(k[2])) if len(k) > 2 and k[2] else ''}</span></div>" for k in b.items)
+            st.markdown((f"<div class='btitle'>{esc(b.title)}</div>" if b.title else "") + f"<div class='tiles'>{tiles}</div>",
+                        unsafe_allow_html=True)
+        elif b.kind == "table" and b.df is not None:
+            show_table(b.df, f"{key}_{i}", b.title)
+        elif b.kind == "chart" and b.chart is not None:
+            if b.chart.kind == "hbar" and len(b.chart.series) == 1:
+                st.markdown(html_bars(b.chart), unsafe_allow_html=True)
+            else:
+                st.plotly_chart(to_plotly(b.chart), width="stretch", key=f"ch{key}{i}", config={"displaylogo": False})
 
 
-# --------------------------------------------------------------------------- #
-# pages
-# --------------------------------------------------------------------------- #
-tabs = st.tabs(["🏠 Overview", "🏍️🚗 OEM dashboards", "🔍 Dealer / RM / ZM", "🤖 Ask the agent", "🧪 Data explorer",
-                "📌 Report pack", "🩺 Data quality"])
+def _md(s):
+    s = esc(str(s))
+    return re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", s)
 
-with tabs[0]:
-    render(A.overview_report(pack), "ov")
 
-with tabs[1]:
+def entity_report(kind: str, ident: str) -> Report:
+    if kind == "dealer":
+        return A.dealer_report(pack, ident)
     r = pack.get("retention")
-    c1, c2, c3 = st.columns(3)
-    oem = c1.selectbox("OEM", OEMS + ["ALL"], format_func=lambda x: OEM_LABEL.get(x, "Private car - all brands"))
-    if oem == "ROYAL ENFIELD":
-        zms = sorted(set(pack.get("re_dealer_snapshot").get("zm", pd.Series(dtype=str))) - {""})
-        zm = c2.selectbox("ZM", ["All"] + zms)
-        snap = pack.get("re_dealer_snapshot")
-        rms = sorted(set(snap[snap["zm"] == zm]["rm"] if zm != "All" else snap.get("rm", pd.Series(dtype=str))) - {""})
-    else:
-        d = r[r["oem"] == oem] if oem != "ALL" else r[r["book"] == "Private car"]
-        zm = c2.selectbox("ZM", ["All"] + sorted(set(d["zm"]) - {""}))
-        rms = sorted(set(d[d["zm"] == zm]["rm"] if zm != "All" else d["rm"]) - {""})
-    rm = c3.selectbox("RM", ["All"] + rms)
-    rep = A.oem_report(pack, oem, None if zm == "All" else zm, None if rm == "All" else rm)
-    render(rep, f"oem{oem}{zm}{rm}")
+    snap = pack.get("re_dealer_snapshot")
+    books = list(dict.fromkeys((["ROYAL ENFIELD"] if not snap.empty and (snap.get(kind, pd.Series(dtype=str)) == ident).any() else [])
+                               + sorted(set(r[r[kind] == ident]["oem"]) - {"ROYAL ENFIELD"})))
+    rep = Report(f"{'RM' if kind == 'rm' else 'ZM'} review - {ident}", " · ".join(f"{k} as of {fmt_date(v)}" for k, v in pack.asof.items()))
+    if not books:
+        return rep.p(f"No data found for {ident}.")
+    for b in books:
+        sub = A.oem_report(pack, b, zm=ident if kind == "zm" else None, rm=ident if kind == "rm" else None)
+        rep.h(sub.title); rep.extend(sub)
+    return rep
 
-with tabs[2]:
-    kind = st.radio("Look up", ["Dealer", "RM", "ZM"], horizontal=True)
-    if kind == "Dealer":
-        r = pack.get("retention"); s_ = pack.get("re_dealer_snapshot")
-        opts = pd.concat([r[["dealer_code", "dealer_name", "oem"]].drop_duplicates("dealer_code"),
-                          s_[["dealer_code", "dealer_name"]].assign(oem="ROYAL ENFIELD") if not s_.empty else pd.DataFrame()])
-        opts = opts.drop_duplicates("dealer_code")
-        lab = {row.dealer_code: f"{row.dealer_name} · {row.dealer_code} · {OEM_LABEL.get(row.oem, row.oem)}" for row in opts.itertuples()}
-        dc = st.selectbox("Dealer (type to search)", list(lab), format_func=lambda x: lab[x], index=None, placeholder="Search dealer name or code")
-        if dc: render(A.dealer_report(pack, dc), f"dl{dc}")
-    else:
-        role = kind.lower()
-        r = pack.get("retention")
-        names = sorted(set(r[role]) | set(pack.get("re_dealer_snapshot").get(role, pd.Series(dtype=str))) - {""})
-        who = st.selectbox(kind, names, index=None, placeholder=f"Choose {kind}")
-        if who:
-            books = sorted(set(r[r[role] == who]["oem"]))
-            snap = pack.get("re_dealer_snapshot")
-            if not snap.empty and (snap[role] == who).any(): books = ["ROYAL ENFIELD"] + [b for b in books if b != "ROYAL ENFIELD"]
-            books = list(dict.fromkeys(books))
-            combo = Report(f"{kind} review - {who}", " · ".join(f"{k} as of {v}" for k, v in pack.asof.items()))
-            for b in books:
-                sub = A.oem_report(pack, b, zm=who if role == "zm" else None, rm=who if role == "rm" else None)
-                combo.h(sub.title); combo.extend(sub)
-            render(combo, f"{role}{who}")
 
-with tabs[3]:
-    st.markdown("Ask anything about the MIS - rankings, comparisons, trends, root causes, action plans. "
-                "Every answer comes with its tables and charts and can be exported.")
-    if not api_key:
-        st.info("No AI key set - answers come from the built-in offline analyst. Add a free Gemini or Groq key in the sidebar "
-                "(🤖 AI model) for full conversational analysis.", icon="ℹ️")
-    hist = st.session_state.setdefault("chat", [])
-    for i, m in enumerate(hist):
-        with st.chat_message(m["role"]):
-            st.markdown(m["content"])
-            if m.get("report") is not None:
-                with st.expander("Tables, charts & export", expanded=(i == len(hist) - 1)):
-                    render(m["report"], f"ans{i}", show_title=False)
-            if m.get("steps"):
-                st.caption("Tools used: " + " → ".join(s.split("(")[0] for s in m["steps"]))
-    q = st.chat_input("e.g. Which Skoda dealers in Naman Singh's zone lost the most first-year renewals vs July?")
-    if q:
-        with st.chat_message("user"):
-            st.markdown(q)
-        with st.chat_message("assistant"):
-            with st.status("Analysing…", expanded=False) as stt:
-                ans = run_agent(pack, q, [{"role": m["role"], "content": m["content"]} for m in hist],
-                                provider=provider, api_key=api_key, model=model,
-                                on_step=lambda n, a: stt.update(label=f"Running {n}…"))
-                stt.update(label="Done", state="complete")
-            if ans.error: st.caption(f"Model error: {ans.error}")
-        hist += [{"role": "user", "content": q}, {"role": "assistant", "content": ans.text, "report": ans.report, "steps": ans.steps}]
-        st.rerun()
-    if hist and st.button("Clear conversation"):
-        st.session_state["chat"] = []; st.rerun()
+# --------------------------------------------------------------------------- #
+# top bar + zone scope + KPI strip
+# --------------------------------------------------------------------------- #
+asof = max(pack.asof.values()) if pack.asof else ""
+re_t = TARGETS["ROYAL ENFIELD"]; pc_t = TARGETS["SKODA"]
+all_zms = sorted(set(pack.get("retention")["zm"]) | set(pack.get("re_dealer_snapshot").get("zm", pd.Series(dtype=str))) - {""})
+chips = [f"<span class='chip'>RE targets <b>FY {re_t['FY']:.0%}</b> · <b>OY {re_t['OY']:.0%}</b></span>",
+         f"<span class='chip'>Car targets <b>FY {pc_t['FY']:.0%}</b> · <b>OY {pc_t['OY']:.0%}</b> · <b>Overall {pc_t['TOT']:.0%}</b></span>",
+         f"<span class='chip'>Amber <b>{S['amber']} pts</b> · min base <b>{S['min_base']}</b></span>",
+         f"<span class='chip'><b>{len(pack.sources)}</b> MIS files · {esc(S.get('last_sync') or fmt_date(asof))}</span>"]
+tcol, zcol = st.columns([5, 1.1], vertical_alignment="center")
+with tcol:
+    st.markdown(f"<div class='top'><div class='brand'><div class='mark'>MIS</div><div><h1>MIS Retention Analyst</h1>"
+                f"<p>All OEMs · EIBL · MIS as of {esc(fmt_date(asof))}</p></div></div><div class='chips'>{''.join(chips)}</div></div>",
+                unsafe_allow_html=True)
+with zcol:
+    opts = ["All zones"] + all_zms
+    S["zm"] = st.selectbox("Zone", opts, index=opts.index(S["zm"]) if S["zm"] in opts else 0, label_visibility="collapsed",
+                           help="Scope every tab, report and export to one ZM")
+ZM = None if S["zm"] == "All zones" else S["zm"]
+BOOK = ra.dealer_book(pack, ZM)
 
-with tabs[4]:
-    avail = [k for k in CATALOG if not pack.get(k).empty]
-    ds = st.selectbox("Dataset", avail, format_func=lambda k: f"{k}  ({len(pack.get(k)):,} rows)")
-    st.caption(CATALOG[ds])
-    df = pack.get(ds)
-    c1, c2, c3, c4 = st.columns(4)
-    cat_cols = [c for c in df.columns if df[c].dtype == object or df[c].dtype == bool]
-    num_cols = [c for c in df.columns if pd.api.types.is_numeric_dtype(df[c]) and df[c].dtype != bool]
-    fcol = c1.selectbox("Filter column", ["(none)"] + cat_cols)
-    fval = c2.multiselect("Values", sorted(df[fcol].astype(str).unique())[:500]) if fcol != "(none)" else []
-    gby = c3.multiselect("Group by", cat_cols)
-    mets = c4.multiselect("Sum", num_cols, default=[c for c in ("base", "ach") if c in num_cols])
-    d = df[df[fcol].astype(str).isin(fval)] if fval else df
-    if gby and mets:
-        d = d.groupby(gby, as_index=False)[mets].sum()
-        if "base" in d and "ach" in d: d["Ret %"] = d["ach"] / d["base"].where(d["base"] != 0)
-        if "retail" in d and "new_nop" in d: d["Penetration %"] = d["new_nop"] / d["retail"].where(d["retail"] != 0)
-    ex = Report(f"{ds} extract", CATALOG[ds]).table(d.head(5000), ds)
-    if gby and mets and len(d) <= 60:
-        from mis.charts import from_df
-        ycol = "Ret %" if "Ret %" in d else mets[0]
-        kind = st.radio("Chart", ["bar", "hbar", "line", "pie"], horizontal=True)
-        ex.chart(from_df(d, gby[0], ycol, kind, f"{ycol} by {gby[0]}"))
-    render(ex, f"ex{ds}", show_title=False)
 
-with tabs[5]:
-    if not st.session_state.get("pins"):
-        st.info("Use **📌 Add to pack** under any dashboard or agent answer to collect a multi-section report, then export it here as one HTML / PDF / PPT / CSV.")
-    else:
-        render(st.session_state["combo"], "combo")
+def kpi_card(lbl, pct, ach, base, tgt, sub_extra=""):
+    if pct != pct:  # NaN
+        return ""
+    bad = pct < tgt
+    m = max(tgt, pct, 1e-9)
+    gap = max(0, int(round(tgt * base - ach)))
+    return (f"<div class='kpi'><div class='lbl'>{esc(lbl)}</div><div class='val num{' bad' if bad else ''}'>{pct * 100:.1f}%</div>"
+            f"<div class='sub num'>{ach:,.0f} renewed of {base:,.0f} due{esc(sub_extra)}</div>"
+            f"<div class='bar'><i style='width:{min(100, pct / m * 100):.1f}%'></i><em style='left:{min(100, tgt / m * 100):.1f}%'></em></div>"
+            f"<div class='foot num'><span>Target {tgt:.0%}</span><span>Gap <b>{gap:,}</b> policies</span></div></div>")
 
-with tabs[6]:
-    render(A.data_quality_report(pack), "dq")
-    with st.expander("Files expected"):
-        st.dataframe(pd.DataFrame([{"Type": v[1], "Book": v[2], "File name pattern": v[0]} for v in FILE_TYPES.values()]),
-                     hide_index=True, use_container_width=True)
+
+cards = []
+for o in OEMS:
+    b = BOOK[BOOK["oem"] == o] if not BOOK.empty else BOOK
+    if b.empty: continue
+    base, ach = b["Base"].sum(), b["Renewed"].sum()
+    extra = ""
+    if o == "ROYAL ENFIELD":
+        rg = pack.get("re_region")
+        if ZM and not rg.empty: rg = rg[[re_zm(x) == ZM for x in rg["region"]]]
+        if not rg.empty: extra = f" · last month same day {rg['fy_ach_prev'].sum() / max(1, rg['fy_base_prev'].sum()):.1%}"
+    cards.append(kpi_card(f"{OEM_LABEL[o]} · {b['Period'].iloc[0]}", ach / base if base else float("nan"), ach, base,
+                          b["Target %"].iloc[0], extra))
+st.markdown(f"<div class='kpis'>{''.join(cards)}</div>", unsafe_allow_html=True)
+
+# --------------------------------------------------------------------------- #
+# main panel + chat
+# --------------------------------------------------------------------------- #
+left, right = st.columns([1, 0.37], gap="medium")
+SC = f"z{ZM or 'all'}"      # widget-key suffix per zone scope
+
+with left:
+    with st.container(key="mainpanel"):
+        # fixed slot above the tabs: opening/closing a dashboard never shifts the tabs, so the selected tab is kept
+        focus_slot = st.container(key="focusslot")
+        TABS = ["Overview", "Dealers", "RMs", "RM dashboard", "Dealer dashboard", "OEM dashboards", "First year",
+                "Royal Enfield", "Volvo", "Open cases", "Penetration", "Payout", "Reports", "Data & settings"]
+        tabs = dict(zip(TABS, st.tabs(TABS)))
+
+        with tabs["Overview"]:
+            if ZM:
+                render(ra.zone_exec(pack, ZM), f"ov{SC}")
+            else:
+                ov = A.overview_report(pack)
+                ov.h("What needs action"); ov.bullets(ra.action_insights(BOOK, pack))
+                render(ov, "ov")
+
+        with tabs["Dealers"]:
+            c1, c2, c3, c4 = st.columns([2, 1, 1.2, 1.3])
+            q = c1.text_input("Search", placeholder="Dealer name or code", label_visibility="collapsed")
+            fo = c2.selectbox("OEM", ["All OEMs"] + [OEM_LABEL[o] for o in OEMS], label_visibility="collapsed")
+            frm = c3.selectbox("RM", ["All RMs"] + sorted(set(BOOK["RM"]) - {""}), label_visibility="collapsed")
+            frag = c4.multiselect("RAG", ["Red", "Amber", "Green"], placeholder="All RAG", label_visibility="collapsed")
+            oem_key = next((o for o in OEMS if OEM_LABEL[o] == fo), None)
+            render(ra.dealer_list(pack, ZM, oem_key, frag or None, None if frm == "All RMs" else frm, q or None), f"dl{SC}")
+
+        with tabs["RMs"]:
+            render(ra.rm_scorecards(pack, ZM), f"rms{SC}")
+
+        with tabs["RM dashboard"]:
+            rms_all = sorted(set(BOOK["RM"]) - {""})
+            pick = st.selectbox("RM", rms_all, index=None, placeholder="Choose an RM", key=f"rmdash{SC}")
+            if pick:
+                render(entity_report("rm", pick), f"rmd{pick}")
+            else:
+                st.markdown("<p class='lead'>Choose an RM for the full dashboard: every OEM in their book, trend, zones, "
+                            "dealers, peers, penetration, open cases and payouts.</p>", unsafe_allow_html=True)
+
+        with tabs["Dealer dashboard"]:
+            dl = {x.Code: f"{x.Dealer} · {x.Code} · {x.OEM} · {str(x.RM).title()}" for x in BOOK.itertuples()}
+            picks = st.multiselect("Dealers in scope", list(dl), format_func=lambda x: dl.get(x, x), key=f"dd{SC}",
+                                   placeholder="Pick one dealer for its dashboard, or several for a combined report")
+            if len(picks) == 1:
+                c1, c2 = st.columns([1, 1])
+                mode = c1.radio("View", ["Dealer dashboard", "Dealer meeting deck"], horizontal=True, label_visibility="collapsed")
+                render(A.dealer_report(pack, picks[0]) if mode == "Dealer dashboard" else ra.meeting_deck(pack, picks[0]),
+                       f"dd1{picks[0]}{mode[:3]}")
+            elif len(picks) > 1:
+                render(ra.selection_report(pack, picks), f"ddn{'-'.join(picks)[:60]}")
+            else:
+                st.markdown("<p class='lead'>Tick one dealer for its dashboard or the dealer-facing meeting deck (anonymised "
+                            "peers, no RM visit data, ends on agreed actions); tick several for each code in full plus a "
+                            "side-by-side summary. Every view exports.</p>", unsafe_allow_html=True)
+
+        with tabs["OEM dashboards"]:
+            r = pack.get("retention")
+            c1, c2 = st.columns(2)
+            oem = c1.selectbox("OEM", OEMS + ["ALL"], format_func=lambda x: OEM_LABEL.get(x, "Private car - all brands"), key="oemsel")
+            if oem == "ROYAL ENFIELD":
+                snap = pack.get("re_dealer_snapshot")
+                rms = sorted(set(snap[snap["zm"] == ZM]["rm"] if ZM else snap.get("rm", pd.Series(dtype=str))) - {""})
+            else:
+                d = r[r["oem"] == oem] if oem != "ALL" else r[r["book"] == "Private car"]
+                rms = sorted(set(d[d["zm"] == ZM]["rm"] if ZM else d["rm"]) - {""})
+            rm = c2.selectbox("RM", ["All"] + rms, key=f"oemrm{oem}{SC}")
+            render(A.oem_report(pack, oem, ZM, None if rm == "All" else rm), f"oem{oem}{rm}{SC}")
+
+        with tabs["First year"]:
+            render(ra.fy_vs_oy(pack, ZM), f"fy{SC}")
+        with tabs["Royal Enfield"]:
+            render(A.re_report(pack, ZM), f"re{SC}")
+        with tabs["Volvo"]:
+            render(ra.volvo_page(pack, ZM), f"vo{SC}")
+        with tabs["Open cases"]:
+            render(ra.build(pack, "open", ZM), f"oc{SC}")
+        with tabs["Penetration"]:
+            render(ra.penetration_report(pack, ZM), f"pen{SC}")
+        with tabs["Payout"]:
+            render(ra.payout_report(pack, ZM), f"pay{SC}")
+
+        with tabs["Reports"]:
+            st.markdown("<p class='lead'>Pick a report and its scope, then build it. Every report renders here and exports "
+                        "to HTML, PDF, PowerPoint or CSV. For anything else, ask the analyst - Claude composes it on demand.</p>",
+                        unsafe_allow_html=True)
+            labels = {rid: lab for rid, lab, _ in ra.REPORTS}
+            c1, c2, c3 = st.columns([1.4, 1, 1.4])
+            rid = c1.selectbox("Report", list(labels), format_func=lambda x: labels[x], key="rpt")
+            rzm = c2.selectbox("Zone", ["All zones"] + all_zms, index=(all_zms.index(ZM) + 1) if ZM else 0, key=f"rptzm{SC}")
+            rzm = None if rzm == "All zones" else rzm
+            who = None
+            if rid in ("meeting", "dealer"):
+                dl2 = {x.Code: f"{x.Dealer} · {x.Code} · {x.OEM}" for x in ra.dealer_book(pack, rzm).itertuples()}
+                who = c3.selectbox("Dealer", list(dl2), format_func=lambda x: dl2.get(x, x), index=None, placeholder="Choose dealer", key="rptd")
+            elif rid == "rm":
+                who = c3.selectbox("RM", sorted(set(ra.dealer_book(pack, rzm)["RM"]) - {""}), index=None, placeholder="Choose RM", key="rptr")
+            st.caption(next(d for i, _, d in ra.REPORTS if i == rid))
+            if st.button("Build report", type="primary", key="rptgo"):
+                S["built"] = (rid, rzm, who)
+            if S.get("built"):
+                b_rid, b_zm, b_who = S["built"]
+                if b_rid == "rm":
+                    rep = entity_report("rm", b_who) if b_who else Report("Full RM review").p("Choose an RM.")
+                elif b_rid == "dealer":
+                    rep = A.dealer_report(pack, b_who) if b_who else Report("Full dealer review").p("Choose a dealer.")
+                else:
+                    rep = ra.build(pack, b_rid, b_zm, b_who)
+                render(rep, f"rpt{b_rid}{b_zm}{b_who}")
+            st.markdown("<div class='sec-h'>Report pack</div>", unsafe_allow_html=True)
+            if not S["pins"]:
+                st.markdown("<p class='lead'>Use <b>＋ Report pack</b> on any view to collect sections, then export them "
+                            "here as one file.</p>", unsafe_allow_html=True)
+            else:
+                combo = Report("MIS report pack", " · ".join(f"{k} as of {fmt_date(v)}" for k, v in pack.asof.items()))
+                for p_ in S["pins"]:
+                    combo.h(p_.title); combo.extend(p_)
+                st.markdown("<div class='ins'>" + "".join(f"<div>{i + 1}. {esc(p_.title)}</div>" for i, p_ in enumerate(S["pins"])) + "</div>",
+                            unsafe_allow_html=True)
+                if st.button("Clear pack"):
+                    S["pins"] = []; st.rerun()
+                render(combo, "combo")
+
+        with tabs["Data & settings"]:
+            data_controls()
+            st.markdown("<div class='sec-h'>Claude analyst</div>", unsafe_allow_html=True)
+            c1, c2, c3 = st.columns([2, 1.2, 1])
+            k = c1.text_input("Anthropic API key", type="password", value="",
+                              placeholder="using the key from app secrets" if secret("ANTHROPIC_API_KEY") else "sk-ant-… (kept for this session only)")
+            if k: S["api_key"] = k
+            models = [DEFAULT_MODEL, "claude-sonnet-5-5", "claude-haiku-4-5"]
+            S["model"] = c2.selectbox("Model", models, index=models.index(S["model"]) if S["model"] in models else 0)
+            S["effort"] = c3.selectbox("Effort", EFFORTS, index=EFFORTS.index(S["effort"]) if S["effort"] in EFFORTS else 2)
+            st.markdown("<div class='sec-h'>Criteria - what counts as critical</div>", unsafe_allow_html=True)
+            c1, c2 = st.columns(2)
+            S["amber"] = c1.number_input("Amber band (points below target)", 0, 50, int(S["amber"]))
+            S["min_base"] = c2.number_input("Minimum base to flag a dealer", 0, 500, int(S["min_base"]))
+            tgt = S["targets"]
+            for o in OEMS:
+                c0, c1, c2, c3 = st.columns([1.3, 1, 1, 1])
+                c0.markdown(f"<div style='padding-top:30px;font-weight:600'>{OEM_LABEL[o]}</div>", unsafe_allow_html=True)
+                tgt[o]["FY"] = c1.number_input("First year %", 0, 100, int(round(tgt[o]["FY"] * 100)), key=f"t{o}fy") / 100
+                tgt[o]["OY"] = c2.number_input("Other year %", 0, 100, int(round(tgt[o]["OY"] * 100)), key=f"t{o}oy") / 100
+                tgt[o]["TOT"] = c3.number_input("Overall %", 0, 100, int(round(tgt[o]["TOT"] * 100)), key=f"t{o}tot") / 100
+            st.caption("RE first-year 30% and Volvo 75% come from the MIS files; Audi / Skoda / VW targets are placeholders - set yours. "
+                       "RAG, policies-to-target, flags and insights everywhere follow these criteria.")
+            st.markdown("<div class='sec-h'>Data quality</div>", unsafe_allow_html=True)
+            st.markdown("<div class='dq'>" + "".join(
+                f"<div class='{esc(n['severity'])}'><b>{esc(n['source'])}</b>{esc(n['note'])}</div>" for n in pack.notes) + "</div>",
+                unsafe_allow_html=True)
+            render(ra.data_corrections(pack), "dq")
+            with st.expander("Files expected"):
+                st.dataframe(pd.DataFrame([{"Type": v[1], "Book": v[2], "File name pattern": v[0]} for v in FILE_TYPES.values()]),
+                             hide_index=True, width="stretch")
+
+    with focus_slot:
+        foc = S.get("focus")
+        if foc and S.get("focus_shown") != foc:
+            S["focus_shown"] = foc      # newly opened -> bring it into view
+            import streamlit.components.v1 as components
+            components.html("<script>const d=window.parent.document;const m=d.querySelector('[data-testid=stMain]')||d.scrollingElement;"
+                            "(m.scrollTo?m:window.parent).scrollTo({top:0,behavior:'smooth'});"
+                            "(d.scrollingElement||d.body).scrollTo({top:0,behavior:'smooth'});</script>", height=0)
+        if foc:
+            kind, ident = foc
+            c1, c2 = st.columns([6, 1])
+            label = {"dealer": "Dealer dashboard", "rm": "RM dashboard", "zm": "ZM dashboard", "answer": "Analyst answer"}[kind]
+            c1.markdown(f"<div class='focus'><span class='k'>{label}</span></div>", unsafe_allow_html=True)
+            if c2.button("✕ Close", key="close_focus", width="stretch"):
+                S["focus"] = None; st.rerun()
+            if kind == "answer":
+                i = int(ident)
+                if 0 <= i < len(S["chat"]) and S["chat"][i].get("report") is not None:
+                    render(S["chat"][i]["report"], f"fa{i}")
+            else:
+                render(entity_report(kind, ident), f"f{kind}{ident}")
+            st.divider()
+
+with right:
+    with st.container(key="chatpanel"):
+        on = bool(API_KEY)
+        st.markdown(f"<div class='chead'><span class='dot{'' if on else ' off'}'></span><div><h2>Ask the analyst</h2>"
+                    f"<p>{'Claude · ' + esc(S['model']) + ' · effort ' + esc(S['effort']) if on else 'Offline analyst - add an Anthropic key in Data & settings'}"
+                    f"{' · ' + esc(ZM.title()) if ZM else ''}</p></div></div>", unsafe_allow_html=True)
+        box = st.container(height=620, border=False)
+        with box:
+            if not S["chat"]:
+                st.markdown("<p class='note'>Ask about any OEM, zone, RM or dealer - rankings, trends, gaps to target, "
+                            "why a number moved, what to do next, or any report you need. Claude runs queries on the live "
+                            "MIS data, builds tables and charts, and every answer can be exported.</p>", unsafe_allow_html=True)
+            for i, m in enumerate(S["chat"]):
+                with st.chat_message(m["role"], avatar="🧑" if m["role"] == "user" else "📊"):
+                    st.markdown(m["content"])
+                    if m.get("report") is not None:
+                        b1, b2, b3 = st.columns(3)
+                        if b1.button("Open full answer", key=f"open{i}", width="stretch"):
+                            S["focus"] = ("answer", str(i)); st.rerun()
+                        for col, fmt, lab in ((b2, "pdf", "PDF"), (b3, "pptx", "PPT")):
+                            ck = f"ans{i}:{fmt}"
+                            if ck in S["exports"]:
+                                data, fn, mime = S["exports"][ck]
+                                col.download_button("⬇ " + lab, data, file_name=fn, mime=mime, key=f"adl{i}{fmt}", width="stretch")
+                            elif col.button(lab, key=f"a{fmt}{i}", width="stretch"):
+                                S["exports"][ck] = export(m["report"], fmt); st.rerun()
+                        if m.get("steps"):
+                            st.caption("Tools: " + " → ".join(dict.fromkeys(s.split("(")[0].split(" ")[0] for s in m["steps"])))
+                        if m.get("error"):
+                            st.caption(f"⚠️ {m['error']}")
+        q = st.chat_input("Ask about any OEM, zone, RM or dealer…")
+        if q:
+            with box:
+                with st.chat_message("user", avatar="🧑"):
+                    st.markdown(q)
+                with st.chat_message("assistant", avatar="📊"):
+                    with st.status("Analysing…", expanded=False) as stt:
+                        ask = q if not ZM else f"{q}\n\n(Scope: zone {ZM} unless the question says otherwise.)"
+                        ans = run_agent(pack, ask, [{"role": m["role"], "content": m["content"]} for m in S["chat"]],
+                                        api_key=API_KEY, model=S["model"], effort=S["effort"],
+                                        on_step=lambda n, a: stt.update(label=f"Running {n}…"))
+                        stt.update(label="Done", state="complete")
+            S["chat"] += [{"role": "user", "content": q},
+                          {"role": "assistant", "content": ans.text, "report": ans.report, "steps": ans.steps, "error": ans.error}]
+            S["focus"] = ("answer", str(len(S["chat"]) - 1))
+            st.rerun()
+        if S["chat"] and st.button("Clear conversation", key="clearchat"):
+            S["chat"] = []; S["focus"] = None; st.rerun()
