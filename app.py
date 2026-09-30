@@ -26,6 +26,14 @@ from mis.loaders import FILE_TYPES, load_folder
 from mis.model import CATALOG, OEM_LABEL, OEMS, TARGETS, re_zm
 from mis.report import PCT_HINT, Report, export, fmt_cell
 
+# Force the light RESP theme from code, so every device (Windows, Android, iOS, dark mode or not) gets the same look
+# even if .streamlit/config.toml is missing from the deployment.
+for _k, _v in {"theme.base": "light", "theme.primaryColor": "#1F5B3F", "theme.backgroundColor": "#EEF1F4",
+               "theme.secondaryBackgroundColor": "#F6F8F9", "theme.textColor": "#14202B"}.items():
+    try:
+        st._config.set_option(_k, _v)
+    except Exception:
+        pass
 st.set_page_config(page_title="MIS Retention Analyst", page_icon="📊", layout="wide", initial_sidebar_state="collapsed")
 
 # --------------------------------------------------------------------------- #
@@ -138,6 +146,26 @@ h1,h2,h3,h4{font-family:var(--font-d) !important;color:var(--ink)}
 .dq div.high{border-left-color:var(--bad)} .dq div.low, .dq div.info{border-left-color:var(--line)}
 .dq b{display:block;margin-bottom:2px}
 [data-testid="stDataFrame"]{border:1px solid var(--line-soft);border-radius:8px}
+/* phone + dark-mode safety: keep the RESP light look even if the device is in dark mode or the theme file is missing */
+:root{color-scheme:light}
+.stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"], [data-testid="stMainBlockContainer"]{background:var(--ground) !important;color:var(--ink) !important}
+.stApp p, .stApp li, .stApp label, .stApp span, .stApp h1, .stApp h2, .stApp h3, .stApp h4{color:var(--ink)}
+.stApp [data-baseweb="select"] > div, .stApp input, .stApp textarea{background:#fff !important;color:var(--ink) !important}
+[data-baseweb="popover"] *, [data-baseweb="menu"] *{background-color:#fff;color:var(--ink)}
+.stApp .num, .stApp .kpi .val{color:var(--ink)} .stApp .kpi .val.bad{color:var(--bad)}
+@media (max-width: 768px){
+  .block-container{padding:0 8px 24px !important}
+  [role="tablist"]{flex-wrap:wrap !important;overflow:visible !important;gap:4px !important;border-bottom:0 !important;height:auto !important}
+  [role="tab"]{padding:5px 11px !important;border:1px solid var(--line) !important;border-radius:16px !important;background:var(--surface) !important;height:auto !important}
+  [role="tab"][aria-selected="true"]{background:var(--accent) !important}
+  [role="tab"][aria-selected="true"] p{color:#fff !important}
+  [role="tab"] p{font-size:13px}
+  [data-baseweb="tab-highlight"], [data-baseweb="tab-border"]{display:none !important}
+  [data-testid="stTabs"] button[aria-label*="croll"], [data-testid="stTabs"] > div > div:has(> [role="tablist"]) ~ button{display:none !important}
+  .kpis{grid-template-columns:1fr 1fr;gap:8px} .kpi{padding:10px 12px} .kpi .val{font-size:26px} .kpi .sub{font-size:11.5px}
+  .tiles{grid-template-columns:1fr 1fr} .brow{grid-template-columns:100px 1fr 62px}
+  .st-key-chatpanel{position:static} .chips{margin-left:0} .top{padding:10px 12px}
+}
 </style>""", unsafe_allow_html=True)
 
 esc = html.escape
@@ -395,7 +423,7 @@ def render(rep: Report, key: str, title=True):
             if b.chart.kind == "hbar" and len(b.chart.series) == 1:
                 st.markdown(html_bars(b.chart), unsafe_allow_html=True)
             else:
-                st.plotly_chart(to_plotly(b.chart), width="stretch", key=f"ch{key}{i}", config={"displaylogo": False})
+                st.plotly_chart(to_plotly(b.chart), width="stretch", key=f"ch{key}{i}", config={"displaylogo": False, "displayModeBar": False, "responsive": True})
 
 
 def _md(s):
@@ -626,8 +654,9 @@ with left:
                 S["model"] = c1.selectbox("Model", models, index=models.index(S["model"]) if S["model"] in models else 0)
                 S["effort"] = c2.selectbox("Effort", EFFORTS, index=EFFORTS.index(S["effort"]) if S["effort"] in EFFORTS else 2)
             else:
-                st.caption("Free key: aistudio.google.com/apikey (Gemini) or console.groq.com/keys (Groq). Model: "
-                           + PROVIDERS[S["provider"]]["model"])
+                S["free_model"] = st.text_input("Model (optional)", value=S.get("free_model", ""),
+                                                placeholder="leave empty - the newest available model is chosen automatically")
+                st.caption("Free key: aistudio.google.com/apikey (Gemini) or console.groq.com/keys (Groq).")
             st.markdown("<div class='sec-h'>Criteria - what counts as critical</div>", unsafe_allow_html=True)
             c1, c2 = st.columns(2)
             S["amber"] = c1.number_input("Amber band (points below target)", 0, 50, int(S["amber"]))
@@ -713,7 +742,7 @@ with right:
                         ask = q if not ZM else f"{q}\n\n(Scope: zone {ZM} unless the question says otherwise.)"
                         ans = run_agent(pack, ask, [{"role": m["role"], "content": m["content"]} for m in S["chat"]],
                                         api_key=API_KEY, provider=S["provider"],
-                                        model=S["model"] if S["provider"] == "claude" else "", effort=S["effort"],
+                                        model=S["model"] if S["provider"] == "claude" else S.get("free_model", "").strip(), effort=S["effort"],
                                         on_step=lambda n, a: stt.update(label=f"Running {n}…"))
                         stt.update(label="Done", state="complete")
             S["chat"] += [{"role": "user", "content": q},
